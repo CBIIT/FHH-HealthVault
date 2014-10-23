@@ -14,9 +14,33 @@
         <jboss.port>8080</jboss.port>
         <jboss.naming.port>1099</jboss.naming.port>
         <jboss.configuration>default</jboss.configuration>
+        
+        <mshv.shell.url>https://account.healthvault-ppe.com</mshv.shell.url>
+        <mshv.service.endpoint.url>https://platform.healthvault-ppe.com/platform/wildcat.ashx</mshv.service.endpoint.url>
+        <mshv.keystore.filename>/keystore_dev</mshv.keystore.filename>
+        <mshv.keystore.keyname>mfhp</mshv.keystore.keyname>
+        <mshv.keystore.password>5ams0lutions</mshv.keystore.password>
+        
   </properties>
   
   <build>
+  <resources>
+	     <resource>
+	        <directory>src/main/resources</directory>
+	        <filtering>true</filtering>
+	        <excludes>
+            	<exclude>keystore*</exclude>
+        	</excludes>
+	      </resource>
+			<resource>
+		        <directory>src/main/resources</directory>
+		        <filtering>false</filtering>
+		        <includes>
+		            <include>keystore*</include>
+		        </includes>
+		    </resource>	      
+	    </resources>
+    
         <plugins>
             <plugin>
                 <groupId>org.codehaus.cargo</groupId>
