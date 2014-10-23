@@ -1,0 +1,31 @@
+<html>
+
+    <head>
+        <title>Upload File</title>
+    </head>
+    <body>
+    	<a href="https://account.healthvault-ppe.com/redirect.aspx?target=AUTH&targetqs=?appid=a966f790-2e79-49ce-b06b-1de714a957a8%26actionqs=LOAD%26redirect=http%3A%2F%2Flocalhost%3A8080%2FFHH-REST%2Findex.html">Login</a>
+        <br/><br/>
+        <b>ADD/UPDATE Document</b>
+        <form method="post" action="http://localhost:8080/FHH-REST/rest/hv/putFHHDocument">
+        	Auth Token: <br>
+        	<textarea name="authToken" rows="4" cols="100"></textarea><br><br>
+        	XML Data: <br>
+        	<textarea name="xmlData" rows="4" cols="100"></textarea><br><br>
+			Thing ID: <input name="thingId" type="text" size="50">      	
+        	<br/>
+        	Version Stamp: <input name="versionStamp" type="text" size="50">      	
+        	<br/>
+        	<input type="submit" value="Submit"/>
+    	</form>
+    	<hr>
+    	<br>
+    	<b>RETRIEVE Document</b>
+        <form method="post" action="http://localhost:8080/FHH-REST/rest/hv/getFHHDocument">
+        	Auth Token: <br>
+        	<textarea name="authToken" rows="4" cols="100"></textarea><br><br>
+        	<input type="submit" value="Submit"/>
+    	</form>
+    	
+    </body>
+</html>
