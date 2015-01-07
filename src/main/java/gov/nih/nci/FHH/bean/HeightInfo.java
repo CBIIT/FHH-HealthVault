@@ -27,6 +27,8 @@ public static final String heightType = "40750a6a-89b2-455c-bd8d-b420a4cb500b";
 	private String versionStamp = "";
 	private String value = "";
 	private String unit = "";
+	public static String height = "";
+	public static String heightUnit = "";
 	
 	public String getValue() {
 		return value;
@@ -76,7 +78,7 @@ public static final String heightType = "40750a6a-89b2-455c-bd8d-b420a4cb500b";
 		XPath xPath =  XPathFactory.newInstance().newXPath();
 		
 		try {
-			String expr = "/FamilyHistory/subject/patient/patientPerson/subjectof2/clinicalObservation";
+			String expr = "/FamilyHistory/subject/patient/patientPerson/subjectOf2/clinicalObservation";
 			NodeList nodeList = (NodeList) xPath.compile(expr).evaluate(doc, XPathConstants.NODESET);
 			for (int i = 0;null!=nodeList && i < nodeList.getLength(); i++) {
 		        Node node = nodeList.item(i);
@@ -98,9 +100,11 @@ public static final String heightType = "40750a6a-89b2-455c-bd8d-b420a4cb500b";
 			        	for (int j = 0; j < vAttributesList.getLength(); j++) {
 			        		if( vAttributesList.item(j).getNodeName().equals("value")) {
 			        			setValue(vAttributesList.item(j).getNodeValue());
+			        			height = this.getValue();
 			        		}
 			        		if( vAttributesList.item(j).getNodeName().equals("unit")) {
 			        			setUnit(vAttributesList.item(j).getNodeValue());
+			        			heightUnit = this.getUnit();
 			        		}
 			                System.out.println("Attribute: "
 			                        + vAttributesList.item(j).getNodeName() + " = "
@@ -108,6 +112,8 @@ public static final String heightType = "40750a6a-89b2-455c-bd8d-b420a4cb500b";
 			            }
 			        	
 			        	break;
+		        	}else{
+		        		return;
 		        	}
 		        }
 		    }
@@ -124,6 +130,9 @@ public static final String heightType = "40750a6a-89b2-455c-bd8d-b420a4cb500b";
 	
 	private void writeHeightInfo(String authToken, DataBean dataBean)
 	{
+		if(this.getValue().equals("")){
+			return;
+		}
 		String xmlData = dataBean.getXmlData();
 		setupHeightInfo(xmlData);
 		

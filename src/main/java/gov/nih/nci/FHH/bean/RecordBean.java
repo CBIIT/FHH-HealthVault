@@ -148,11 +148,11 @@ public static final String familyHistoryPerson = "cc23422c-4fba-4a23-b52a-c01d6c
     				//System.out.println("(((((((((((((((((");
     				//System.out.println(xml);
     				
-    				hvXml.append(xml.replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", ""));
+    				hvXml.append(xml);
     	         }
 
-                hvXml.insert(0, "<?xml version=\"1.0\" encoding=\"UTF-8\"?><HealthVault>");
-                hvXml.append("</HealthVault>");
+                hvXml.insert(0, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
+              //  hvXml.append("</HealthVault>");
                 
                 
                 System.out.println(hvXml);

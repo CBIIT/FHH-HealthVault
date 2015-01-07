@@ -229,7 +229,7 @@ public class PersonalDemographicInfo implements Serializable, thing
 			String gender = xPath.compile(expr).evaluate(doc);
 			setGender(gender);
 			
-			expr = "/FamilyHistory/subject/patient/patientPerson/raceCode/@displayName";
+			expr = "/FamilyHistory/subject/patient/patientPerson/ethnicGroupCode/@displayName";
 			String ethnicity = xPath.compile(expr).evaluate(doc);
 			setEthnicity(ethnicity);
 			
