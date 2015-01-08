@@ -135,7 +135,7 @@ public static final String familyHistoryPerson = "cc23422c-4fba-4a23-b52a-c01d6c
 				
                 String xml = "";
                 StringBuilder hvXml = new StringBuilder("");
-                int count = Math.min(50, things.getLength());
+                int count = Math.min(500, things.getLength());
                 for (int i=0; i<count; i++)
     	        {
     	            Node thing = things.item(i);

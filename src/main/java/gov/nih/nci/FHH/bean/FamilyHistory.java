@@ -81,8 +81,28 @@ public class FamilyHistory implements Serializable, thing{
 	private String estimatedAge = "";
 	private String ageRangeLow = "";
 	private String ageRangeHigh = "";
+	private String parentId = "";
+	private String twinStatus = "";
+	boolean adopted = false;
 	
-	
+	public boolean isAdopted() {
+		return adopted;
+	}
+	public void setAdopted(boolean adopted) {
+		this.adopted = adopted;
+	}
+	public String getTwinStatus() {
+		return twinStatus;
+	}
+	public void setTwinStatus(String twinStatus) {
+		this.twinStatus = twinStatus;
+	}
+	public String getParentId() {
+		return parentId;
+	}
+	public void setParentId(String parentId) {
+		this.parentId = parentId;
+	}
 	public String getAgeRangeLow() {
 		return ageRangeLow;
 	}
@@ -477,6 +497,13 @@ public class FamilyHistory implements Serializable, thing{
 		        	if(attributesList.item(k).getNodeValue().equalsIgnoreCase("height")){
 		        		 heightFound = true;
 		        	}
+		        	if(attributesList.item(k).getNodeValue().contains("Fraternal twin")){
+    					this.setTwinStatus("FRATERNAL");
+    				}else if(attributesList.item(k).getNodeValue().contains("Identical twin")){
+    					this.setTwinStatus("IDENTICAL");
+    				}else if(attributesList.item(k).getNodeValue().contains("adopted")){
+    					this.setAdopted(true);
+    				}else{
 		        		if((!(attributesList.item(k).getNodeValue().equalsIgnoreCase("weight")))&&(!(attributesList.item(k).getNodeValue().equalsIgnoreCase("height")))){
 		        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("originalText")){
 		        				this.setSelfCondition(attributesList.item(k).getNodeValue());
@@ -489,13 +516,13 @@ public class FamilyHistory implements Serializable, thing{
 		        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("code")){
 		        				this.setSelfConditionCode(attributesList.item(k).getNodeValue());
 		        				conCodeList.add(this.getSelfConditionCode());
-		        				System.out.println("code =="+this.getSelfConditionCode());
-		        				System.out.println("conCodeList.size==="+conCodeList.size());
+		        				System.out.println("code "+this.getSelfConditionCode());
 		        			}
 		        			
 		        		
 		        			            	
 		            	}
+    				}
 		        		
 	        			}
 	        		}
@@ -545,7 +572,6 @@ public class FamilyHistory implements Serializable, thing{
 					if(this.getEstimatedAge()!=""){
 						estimatedAge.add(this.getEstimatedAge());
 					}
-					System.out.println("Estimates age size =="+estimatedAge.size());
 					}
 				}catch(Exception e){
 					e.printStackTrace();
@@ -650,8 +676,18 @@ public class FamilyHistory implements Serializable, thing{
 		        infoBuilder.append("<gender version=\""+"1.0"+ "\">");
 		        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+this.getSelfGender() +"\" type=\""+this.getSelfGenderCodeSystemName() +"\" value=\""+this.getSelfGenderCode() +"\" version=\""+"3"+"\"/>");
 		        infoBuilder.append("</gender>");
-		        infoBuilder.append("<twin>NO</twin>");
-		        infoBuilder.append("<adopted>false</adopted>");
+		        if(this.getTwinStatus().equalsIgnoreCase("IDENTICAL")){
+		        	infoBuilder.append("<twin>IDENTICAL</twin>");
+		        }else if(this.getTwinStatus().equalsIgnoreCase("FRATERNAL")){
+		        	infoBuilder.append("<twin>FRATERNAL</twin>");
+		        }else{
+		        	infoBuilder.append("<twin>NO</twin>");
+		        }
+		        if(adopted){
+		        	infoBuilder.append("<adopted>true</adopted>");
+		        }else{
+		        	infoBuilder.append("<adopted>false</adopted>");
+		        }
 		        infoBuilder.append("<height version=\""+"1.0"+ "\">");
 		        if(this.getHeightUnit().equalsIgnoreCase("centimeters")){
 		        	infoBuilder.append("<centemiters>"+this.getHeight()+"</centemiters>");
@@ -749,13 +785,34 @@ public class FamilyHistory implements Serializable, thing{
 		        			this.setRace(attributesList.item(k).getNodeValue());
 		        	}
 	        	}
-	        	attributesList = eElement.getElementsByTagName("id").item(0).getAttributes();
-	        	for(int k=0;k<attributesList.getLength();k++){
-	        		System.out.println("Attribute: "
-	                        + attributesList.item(k).getNodeName() + " = "
-	                        + attributesList.item(k).getNodeValue());
-	        		this.setRelativeId(attributesList.item(k).getNodeValue());
+	        	this.setParentId(""); this.setRelativeId("");
+	        	if((eElement.getElementsByTagName("id").item(0)!=null)&&(eElement.getElementsByTagName("id").item(1)!=null)){
+		        	attributesList = eElement.getElementsByTagName("id").item(0).getAttributes();
+		        	for(int k=0;k<attributesList.getLength();k++){
+		        		System.out.println("Attribute: "
+		                        + attributesList.item(k).getNodeName() + " = "
+		                        + attributesList.item(k).getNodeValue());
+		        		this.setParentId(attributesList.item(k).getNodeValue());
+		        	}
+		        	if(eElement.getElementsByTagName("id").item(1)!=null){
+		        	attributesList = eElement.getElementsByTagName("id").item(1).getAttributes();
+		        	for(int k=0;k<attributesList.getLength();k++){
+		        		System.out.println("Attribute: "
+		                        + attributesList.item(k).getNodeName() + " = "
+		                        + attributesList.item(k).getNodeValue());
+		        		this.setRelativeId(attributesList.item(k).getNodeValue());
+		        	}
+		        	}
+	        	}else{
+	        		attributesList = eElement.getElementsByTagName("id").item(0).getAttributes();
+		        	for(int k=0;k<attributesList.getLength();k++){
+		        		System.out.println("Attribute: "
+		                        + attributesList.item(k).getNodeName() + " = "
+		                        + attributesList.item(k).getNodeValue());
+		        		this.setRelativeId(attributesList.item(k).getNodeValue());
+		        	}
 	        	}
+	        	
 	        	attributesList = eElement.getElementsByTagName("name").item(0).getAttributes();
 	        	for(int k=0;k<attributesList.getLength();k++){
 	        		System.out.println("Attribute: "
@@ -782,12 +839,37 @@ public class FamilyHistory implements Serializable, thing{
 		        			}
 	        			}
 	        		}
+	        		twinStatus = ""; adopted = false;
+	        		if(eElement.getElementsByTagName("code").item(0)!=null){
+	        			attributesList = eElement.getElementsByTagName("code").item(0).getAttributes();
+	        			for(int k=0;k<attributesList.getLength();k++){
+	        				System.out.println(" twin condition Attribute: " + k + ":" 
+			                        + attributesList.item(k).getNodeName() + " = "
+			                        + attributesList.item(k).getNodeValue());
+	        				if(attributesList.item(k).getNodeValue().contains("Fraternal twin")){
+	        					this.setTwinStatus("FRATERNAL");
+	        				}
+	        				if(attributesList.item(k).getNodeValue().contains("Identical twin")){
+	        					this.setTwinStatus("IDENTICAL");
+	        				}
+	        				if(attributesList.item(k).getNodeValue().contains("adopted")){
+	        					this.setAdopted(true);
+	        				}
+	        			}
+	        		}
 			        		if(eElement.getElementsByTagName("code").item(2)!=null){
 			        			for(int k=0;k<attributesList.getLength();k++){
 				        		attributesList = eElement.getElementsByTagName("code").item(2).getAttributes();
 				        		System.out.println("condition Attribute: " + k + ":" 
 				                        + attributesList.item(k).getNodeName() + " = "
 				                        + attributesList.item(k).getNodeValue());
+				        		if(attributesList.item(k).getNodeValue().contains("Fraternal twin")){
+		        					this.setTwinStatus("FRATERNAL");
+		        				}else if(attributesList.item(k).getNodeValue().contains("Identical twin")){
+		        					this.setTwinStatus("IDENTICAL");
+		        				}else if(attributesList.item(k).getNodeValue().contains("adopted")){
+		        					this.setAdopted(true);
+		        				}else{
 				        		if(!(attributesList.item(k).getNodeValue().equalsIgnoreCase("Age at Death"))){
 				        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("displayName")){
 				        				this.setCondition(attributesList.item(k).getNodeValue());
@@ -804,6 +886,7 @@ public class FamilyHistory implements Serializable, thing{
 				        		else{
 				        			this.setResolution("death");
 				        			}
+			        			}
 			        			}
 			        		}
 			        		if(eElement.getElementsByTagName("code").item(3)!=null){
@@ -864,7 +947,6 @@ public class FamilyHistory implements Serializable, thing{
 							if(this.getEstimatedAge()!=""){
 								estimatedAgeList.add(this.getEstimatedAge());
 							}
-							System.out.println("Estimated relative age size =="+estimatedAgeList.get(0));
 							
 	        	}
 	        	this.setBirthDate("");
@@ -968,8 +1050,18 @@ public class FamilyHistory implements Serializable, thing{
 	        infoBuilder.append("<gender version=\""+"1.0"+ "\">");
 	        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+this.getGender() +"\" type=\""+this.getGenderCodeSystemName() +"\" value=\""+this.getGenderCode() +"\" version=\""+"3"+"\"/>");
 	        infoBuilder.append("</gender>");
-	        infoBuilder.append("<twin>NO</twin>");
-	        infoBuilder.append("<adopted>false</adopted>");
+	        if(this.getTwinStatus().equalsIgnoreCase("IDENTICAL")){
+	        	infoBuilder.append("<twin>IDENTICAL</twin>");
+	        }else if(this.getTwinStatus().equalsIgnoreCase("FRATERNAL")){
+	        	infoBuilder.append("<twin>FRATERNAL</twin>");
+	        }else{
+	        	infoBuilder.append("<twin>NO</twin>");
+	        }
+	        if(adopted){
+	        	infoBuilder.append("<adopted>true</adopted>");
+	        }else{
+	        	infoBuilder.append("<adopted>false</adopted>");
+	        }
 	        if(this.getRace()!=""){
 		        infoBuilder.append("<races version=\""+"1.0"+ "\">");
 		        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+this.getRace() +"\" type=\""+this.getRaceCodeSystemName() +"\" value=\""+this.getRaceCode() +"\" version=\""+"3"+"\"/>");
@@ -983,6 +1075,12 @@ public class FamilyHistory implements Serializable, thing{
 	        infoBuilder.append("<consanguinity>false</consanguinity>");
 	        infoBuilder.append("</fhh-extensions>");
 	        infoBuilder.append("</extension>");
+	        if(this.getParentId()!=""){
+		        infoBuilder.append("<related-thing>");
+		        infoBuilder.append("<client-thing-id>"+this.getParentId()+"</client-thing-id>");
+		        infoBuilder.append("<relationship-type>PAR</relationship-type>");
+		        infoBuilder.append("</related-thing>");
+	        }
 	        infoBuilder.append("<client-thing-id>"+this.getRelativeId()+"</client-thing-id>");
 	        infoBuilder.append("</common></data-xml></thing>");
 

@@ -101,6 +101,8 @@ public class SimplePersonBean {
 						if(conditions.getJSONObject(j).has("resolution")){
 							if(conditions.getJSONObject(j).getString("resolution").equalsIgnoreCase("death")){
 								relMap.put("is_alive", "dead");
+							}else{
+								relMap.put("is_alive", "alive");
 							}
 							if(conditions.getJSONObject(j).has("name")){
 								JSONObject name = conditions.getJSONObject(j).getJSONObject("name");
@@ -203,13 +205,13 @@ public class SimplePersonBean {
 							JSONObject dateOfBirth = relative.getJSONObject("date-of-birth");
 							if((dateOfBirth.length()>0)&&(dateOfBirth.has("m"))&&(dateOfBirth.has("d"))&&(dateOfBirth.has("y"))){
 								relMap.put("date_of_birth", dateOfBirth.get("m")+"/"+dateOfBirth.get("d")+"/"+dateOfBirth.get("y"));
-								relMap.put("is_alive", "alive");
-							}else if((dateOfBirth.length()>0)&&(dateOfBirth.has("y"))){
-								relMap.put("date_of_birth", dateOfBirth.get("y"));
-								relMap.put("is_alive", "alive");
-							}else{
-								relMap.put("is_alive", "unknown");
-							}
+//								relMap.put("is_alive", "alive");
+							}//else if((dateOfBirth.length()>0)&&(dateOfBirth.has("y"))){
+//								relMap.put("date_of_birth", dateOfBirth.get("y"));
+//								relMap.put("is_alive", "alive");
+//							}else{
+//								relMap.put("is_alive", "unknown");
+//							}
 						}
 						
 						//Relationship to lower case.
@@ -232,13 +234,13 @@ public class SimplePersonBean {
 				if(relatedThings instanceof JSONArray){
 					JSONArray relatedArray = (JSONArray) relatedThings;
 					for(int t=0;t<relatedArray.length();t++){
-						if((relatedArray.getJSONObject(t).getString("relationship-type").equalsIgnoreCase("NFTH"))||(relatedArray.getJSONObject(t).getString("relationship-type").equalsIgnoreCase("NMTH")))
+						if(relatedArray.getJSONObject(t).getString("relationship-type").equalsIgnoreCase("PAR"))
 							relMap.put("parent_id", relatedArray.getJSONObject(t).get("client-thing-id"));
 					}
 				}
 				if(relatedThings instanceof JSONObject){
 					JSONObject relObj = (JSONObject) relatedThings;
-					if((relObj.getString("relationship-type").equalsIgnoreCase("NFTH"))||(relObj.getString("relationship-type").equalsIgnoreCase("NMTH")))
+					if(relObj.getString("relationship-type").equalsIgnoreCase("PAR"))
 						relMap.put("parent_id", relObj.get("client-thing-id"));
 				}
 				
