@@ -7,6 +7,7 @@ import gov.nih.nci.FHH.util.XmlDocument;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -78,7 +79,22 @@ public class FamilyHistory implements Serializable, thing{
 	private String selfId = "";
 	private String relativeId = "";
 	private String estimatedAge = "";
+	private String ageRangeLow = "";
+	private String ageRangeHigh = "";
 	
+	
+	public String getAgeRangeLow() {
+		return ageRangeLow;
+	}
+	public void setAgeRangeLow(String ageRangeLow) {
+		this.ageRangeLow = ageRangeLow;
+	}
+	public String getAgeRangeHigh() {
+		return ageRangeHigh;
+	}
+	public void setAgeRangeHigh(String ageRangeHigh) {
+		this.ageRangeHigh = ageRangeHigh;
+	}
 	public String getEstimatedAge() {
 		return estimatedAge;
 	}
@@ -407,6 +423,7 @@ public class FamilyHistory implements Serializable, thing{
 		for (int i = 0;null!=nodeList && i < nodeList.getLength(); i++) {
 			WeightInfo weight = new WeightInfo();
 			HeightInfo height = new HeightInfo();
+			boolean heightFound = false; boolean weightFound = false;
 			System.out.println("printing height and weight");
 			this.setWeight(weight.weight);
 			this.setWeightUnit(weight.weightUnit);
@@ -415,6 +432,9 @@ public class FamilyHistory implements Serializable, thing{
 	        
 	        if(i==0){
 	        	this.setId("");this.setVersionStamp("");
+	        	List<String> conCodeList = new ArrayList<String>();
+	        	List<String> conList = new ArrayList<String>();
+	        	List<String> estimatedAge = new ArrayList<String>();
 				getPersonalInfo(authToken);
 //				infoBuilder.append("<info>");
 		        infoBuilder.append("<thing>");
@@ -435,6 +455,7 @@ public class FamilyHistory implements Serializable, thing{
         		}
 				
 				try {
+					
 					expr = "/FamilyHistory/subject/patient/patientPerson/subjectOf2/clinicalObservation";
 					NodeList nodeList1 = (NodeList) xPath.compile(expr).evaluate(doc, XPathConstants.NODESET);
 					for (int m = 0;null!=nodeList1 && m < nodeList1.getLength(); m++) {
@@ -444,19 +465,37 @@ public class FamilyHistory implements Serializable, thing{
 					if(eElement.getElementsByTagName("code").item(0)!=null){
 						NamedNodeMap attributesList = eElement.getElementsByTagName("code").item(0).getAttributes();
 	        			for(int k=0;k<attributesList.getLength();k++){
-
+	        				
+	        				this.setSelfCondition("");
+	        				
 		        		System.out.println("condition Attribute: " + k + ":" 
 		                        + attributesList.item(k).getNodeName() + " = "
 		                        + attributesList.item(k).getNodeValue());
+		        	if(attributesList.item(k).getNodeValue().equalsIgnoreCase("weight")){
+		        		 weightFound = true;
+		        	}
+		        	if(attributesList.item(k).getNodeValue().equalsIgnoreCase("height")){
+		        		 heightFound = true;
+		        	}
+		        		if((!(attributesList.item(k).getNodeValue().equalsIgnoreCase("weight")))&&(!(attributesList.item(k).getNodeValue().equalsIgnoreCase("height")))){
 		        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("originalText")){
 		        				this.setSelfCondition(attributesList.item(k).getNodeValue());
+		        				conList.add(this.getSelfCondition());
 		        			}
+		        			
 		        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("codeSystemName")){
 		        				this.setSelfConditionSystemName(attributesList.item(k).getNodeValue());
 		        			}
 		        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("code")){
 		        				this.setSelfConditionCode(attributesList.item(k).getNodeValue());
+		        				conCodeList.add(this.getSelfConditionCode());
+		        				System.out.println("code =="+this.getSelfConditionCode());
+		        				System.out.println("conCodeList.size==="+conCodeList.size());
 		        			}
+		        			
+		        		
+		        			            	
+		            	}
 		        		
 	        			}
 	        		}
@@ -468,22 +507,55 @@ public class FamilyHistory implements Serializable, thing{
 		                        + attributesList.item(k).getNodeName() + " = "
 		                        + attributesList.item(k).getNodeValue());
 		        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("value")){
-		        				this.setEstimatedAge(attributesList.item(k).getNodeValue());
+		        				this.setAgeRangeLow(attributesList.item(k).getNodeValue());
 		        			}
-//		        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("codeSystemName")){
-//		        				this.setSelfConditionSystemName(attributesList.item(k).getNodeValue());
-//		        			}
-//		        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("code")){
-//		        				this.setSelfConditionCode(attributesList.item(k).getNodeValue());
-//		        			}
-		        		
+   		
+	        			}
+	        		}
+					if(eElement.getElementsByTagName("high").item(0)!=null){
+						NamedNodeMap attributesList = eElement.getElementsByTagName("high").item(0).getAttributes();
+	        			for(int k=0;k<attributesList.getLength();k++){
+
+		        		System.out.println("high Attribute : " + k + ":" 
+		                        + attributesList.item(k).getNodeName() + " = "
+		                        + attributesList.item(k).getNodeValue());
+		        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("value")){
+		        				this.setAgeRangeHigh(attributesList.item(k).getNodeValue());
+		        			}
+   		
 	        			}
 	        		}
 			        }
+			        this.setEstimatedAge("");
+			        if((this.getAgeRangeLow().equals("30"))&&(this.getAgeRangeHigh().equals("39"))){
+						this.setEstimatedAge("thirties");
+					}
+					if((this.getAgeRangeLow().equals("20"))&&(this.getAgeRangeHigh().equals("29"))){
+						this.setEstimatedAge("twenties");
+					}
+					if((this.getAgeRangeLow().equals("40"))&&(this.getAgeRangeHigh().equals("49"))){
+						this.setEstimatedAge("fourties");
+					}
+					if((this.getAgeRangeLow().equals("50"))&&(this.getAgeRangeHigh().equals("59"))){
+						this.setEstimatedAge("fifties");
+					}
+					if(this.getAgeRangeLow().equals("60")){
+						this.setEstimatedAge("sixties");
+					}
+					if(this.getEstimatedAge()!=""){
+						estimatedAge.add(this.getEstimatedAge());
+					}
+					System.out.println("Estimates age size =="+estimatedAge.size());
 					}
 				}catch(Exception e){
 					e.printStackTrace();
 				}
+				if((weightFound)&&(conCodeList.size()>0)){
+    				conCodeList.remove(0);
+    			}
+    			if((heightFound)&&(conCodeList.size()>0)){
+    				conCodeList.remove(0);
+    			}
 								
 				expr = "/FamilyHistory/subject/patient/patientPerson/name/@formatted";
 				String fullName = xPath.compile(expr).evaluate(doc);
@@ -521,27 +593,22 @@ public class FamilyHistory implements Serializable, thing{
 			//	this.setSelfConditionCode("OTKIDDIS");
 			//	this.setSelfConditionSystemName("SNOMED_CT");
 				
+				
+				
 	        	infoBuilder.append("<type-id>");
 		        infoBuilder.append(FamilyHistory.familyHistoryType);
 		        infoBuilder.append("</type-id>");
 				infoBuilder.append("<data-xml><family-history>");
-				if(this.getSelfCondition()!=""){
-					infoBuilder.append("<condition><name><text>").append(getSelfCondition()).append("</text>");
+				for(int t=0;t<conList.size();t++){
+					infoBuilder.append("<condition><name><text>").append(conList.get(t)).append("</text>");
 					infoBuilder.append("<code>");
-					infoBuilder.append("<value>").append(this.getSelfConditionCode()).append("</value>");
+					infoBuilder.append("<value>").append(conCodeList.get(t)).append("</value>");
 					infoBuilder.append("<family>urn:gov.familyhistory.hl7</family>");
 					infoBuilder.append("<type>").append(this.getSelfConditionSystemName()).append("</type>");
 					infoBuilder.append("<version>3</version>");
 					infoBuilder.append("</code>");
 					infoBuilder.append("<code>");
-					if(this.getEstimatedAge().equals("30"))
-						infoBuilder.append("<value>ageRange.thirties</value>");
-					if(this.getEstimatedAge().equals("40"))
-						infoBuilder.append("<value>ageRange.forties</value>");
-					if(this.getEstimatedAge().equals("50"))
-						infoBuilder.append("<value>ageRange.fifties</value>");
-					if(this.getEstimatedAge().equals("60"))
-						infoBuilder.append("<value>ageRange.sixties</value>");
+					infoBuilder.append("<value>ageRange.").append(estimatedAge.get(t)).append("</value>");
 					infoBuilder.append("<family>hhs</family>");
 					infoBuilder.append("<type>hhs-onset-date-codes</type>");
 					infoBuilder.append("<version>3</version>");
@@ -622,7 +689,9 @@ public class FamilyHistory implements Serializable, thing{
 
 	        }
 			Node node = nodeList.item(i);
+			List<String> estimatedAgeList = new ArrayList<String>();
 			if(node.getNodeType() == Node.ELEMENT_NODE) {
+				
 	        	Element eElement = (Element) node;
 	        	
 	        	NamedNodeMap attributesList = eElement.getElementsByTagName("code").item(0).getAttributes();
@@ -699,6 +768,7 @@ public class FamilyHistory implements Serializable, thing{
 	        	if(eElement.hasAttribute("Age at Death")){
 	        		System.out.println("testing attribute age at death");
 	        	}
+	        	
 	        	if(eElement.getElementsByTagName("clinicalObservation").item(0)!=null){
 	        		this.setCondition("");
 	        		if(eElement.getElementsByTagName("low").item(0)!=null){
@@ -760,11 +830,42 @@ public class FamilyHistory implements Serializable, thing{
 			        		}
 		        		}
 			        		if(eElement.getElementsByTagName("low").item(0)!=null){
+			        			attributesList = eElement.getElementsByTagName("low").item(0).getAttributes();
 			        			for(int k=0;k<attributesList.getLength();k++){
-			        				System.out.println("Age attributes: "+ attributesList.item(k).getNodeName() + " = "
+			        				System.out.println("low relative attributes: "+ attributesList.item(k).getNodeName() + " = "
 					                        + attributesList.item(k).getNodeValue());
+			        				this.setAgeRangeLow(attributesList.item(k).getNodeValue());
 			        			}
 			        		}
+			        		if(eElement.getElementsByTagName("high").item(0)!=null){
+			        			attributesList = eElement.getElementsByTagName("high").item(0).getAttributes();
+			        			for(int k=0;k<attributesList.getLength();k++){
+			        				System.out.println("high relative attributes: "+ attributesList.item(k).getNodeName() + " = "
+					                        + attributesList.item(k).getNodeValue());
+			        				this.setAgeRangeHigh(attributesList.item(k).getNodeValue());
+			        			}
+			        		}
+			        		this.setEstimatedAge("");
+					        if((this.getAgeRangeLow().equals("30"))&&(this.getAgeRangeHigh().equals("39"))){
+								this.setEstimatedAge("thirties");
+							}
+							if((this.getAgeRangeLow().equals("20"))&&(this.getAgeRangeHigh().equals("29"))){
+								this.setEstimatedAge("twenties");
+							}
+							if((this.getAgeRangeLow().equals("40"))&&(this.getAgeRangeHigh().equals("49"))){
+								this.setEstimatedAge("fourties");
+							}
+							if((this.getAgeRangeLow().equals("50"))&&(this.getAgeRangeHigh().equals("59"))){
+								this.setEstimatedAge("fifties");
+							}
+							if(this.getAgeRangeLow().equals("60")){
+								this.setEstimatedAge("sixties");
+							}
+							if(this.getEstimatedAge()!=""){
+								estimatedAgeList.add(this.getEstimatedAge());
+							}
+							System.out.println("Estimated relative age size =="+estimatedAgeList.get(0));
+							
 	        	}
 	        	this.setBirthDate("");
 	        	if(eElement.getElementsByTagName("birthTime").item(0)!=null){
@@ -800,14 +901,11 @@ public class FamilyHistory implements Serializable, thing{
 				infoBuilder.append("<version>3</version>");
 				infoBuilder.append("</code>");
 				infoBuilder.append("<code>");
-//				if(this.getEstimatedAge().equals("30"))
-//					infoBuilder.append("<value>ageRange.thirties</value>");
-//				if(this.getEstimatedAge().equals("40"))
-//					infoBuilder.append("<value>ageRange.forties</value>");
-//				if(this.getEstimatedAge().equals("50"))
-					infoBuilder.append("<value>ageRange.fifties</value>");
-//				if(this.getEstimatedAge().equals("60"))
-//					infoBuilder.append("<value>ageRange.sixties</value>");
+				if(estimatedAgeList.size()>0){
+					infoBuilder.append("<value>ageRange.").append(estimatedAgeList.get(0)).append("</value>");
+				}else{
+					infoBuilder.append("<value>ageRange.unknown</value>");
+				}
 				infoBuilder.append("<family>hhs</family>");
 				infoBuilder.append("<type>hhs-onset-date-codes</type>");
 				infoBuilder.append("<version>3</version>");
@@ -823,14 +921,11 @@ public class FamilyHistory implements Serializable, thing{
 				infoBuilder.append("<version>3</version>");
 				infoBuilder.append("</code>");
 				infoBuilder.append("<code>");
-//				if(this.getEstimatedAge().equals("30"))
-//					infoBuilder.append("<value>ageRange.thirties</value>");
-//				if(this.getEstimatedAge().equals("40"))
-//					infoBuilder.append("<value>ageRange.forties</value>");
-//				if(this.getEstimatedAge().equals("50"))
-//					infoBuilder.append("<value>ageRange.fifties</value>");
-//				if(this.getEstimatedAge().equals("60"))
-					infoBuilder.append("<value>ageRange.sixties</value>");
+				if(estimatedAgeList.size()>0){
+					infoBuilder.append("<value>ageRange.").append(estimatedAgeList.get(0)).append("</value>");
+				}else{
+					infoBuilder.append("<value>ageRange.unknown</value>");
+				}
 				infoBuilder.append("<family>hhs</family>");
 				infoBuilder.append("<type>hhs-onset-date-codes</type>");
 				infoBuilder.append("<version>3</version>");

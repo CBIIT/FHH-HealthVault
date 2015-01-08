@@ -112,8 +112,6 @@ public static final String heightType = "40750a6a-89b2-455c-bd8d-b420a4cb500b";
 			            }
 			        	
 			        	break;
-		        	}else{
-		        		return;
 		        	}
 		        }
 		    }
@@ -130,12 +128,12 @@ public static final String heightType = "40750a6a-89b2-455c-bd8d-b420a4cb500b";
 	
 	private void writeHeightInfo(String authToken, DataBean dataBean)
 	{
+		
+		String xmlData = dataBean.getXmlData();
+		setupHeightInfo(xmlData);
 		if(this.getValue().equals("")){
 			return;
 		}
-		String xmlData = dataBean.getXmlData();
-		setupHeightInfo(xmlData);
-		
 		Calendar calendar = Calendar.getInstance();
 		StringBuilder infoBuilder = new StringBuilder();
         infoBuilder.append("<info>");

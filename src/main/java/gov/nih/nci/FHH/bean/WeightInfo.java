@@ -127,8 +127,6 @@ public class WeightInfo implements thing {
 			        	
 			        	break;
 		        	}
-		        	}else{
-		        		return;
 		        	}
 		        }
 		    }
@@ -145,11 +143,12 @@ public class WeightInfo implements thing {
 	
 	private void writeWeightInfo(String authToken, DataBean dataBean)
 	{
+		
+		String xmlData = dataBean.getXmlData();
+		setupWeightInfo(xmlData);
 		if(this.getValue().equals("")){
 			return;
 		}
-		String xmlData = dataBean.getXmlData();
-		setupWeightInfo(xmlData);
 		
 		Calendar calendar = Calendar.getInstance();
 		StringBuilder infoBuilder = new StringBuilder();
