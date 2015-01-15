@@ -312,7 +312,7 @@ public class HealthVaultServices {
 //		}
 //		pBean.transferToSimpleBean(result);
 		System.out.println("Json String "+jsonString);
-		
+		System.out.println(person);
         return Response.status(200).entity(person).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS").header("Access-Control-Allow-Headers", "Content-Type, Content-Range, Content-Disposition, Content-Description").build();
 
 	}	

@@ -58,7 +58,10 @@ public class PersonalDemographicInfo implements Serializable, thing
 	public String getFirstName() {
 		if( firstName == null || firstName.equals("")) {
 			int space = getFullName().indexOf(" ");
-			this.firstName = getFullName().substring(0,space);
+			System.out.println("space =="+space);
+			if(space>-1){
+				this.firstName = getFullName().substring(0,space);
+			}
 		}
 		return firstName;
 	}
@@ -68,7 +71,9 @@ public class PersonalDemographicInfo implements Serializable, thing
 	public String getLastName() {
 		if( lastName == null || lastName.equals("")) {
 			int space = getFullName().indexOf(" ");
-			this.lastName = getFullName().substring(space+1);
+			if(space>-1){
+				this.lastName = getFullName().substring(space+1);
+			}
 		}
 		return lastName;
 	}

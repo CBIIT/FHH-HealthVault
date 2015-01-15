@@ -84,7 +84,18 @@ public class FamilyHistory implements Serializable, thing{
 	private String parentId = "";
 	private String twinStatus = "";
 	boolean adopted = false;
+	private List<String> ethnicities;
+	private List<String> ethnicityCodes;
+	private List<String> races;
+	private List<String> raceCodes;
+	private String consanguinity;
 	
+	public String getConsanguinity() {
+		return consanguinity;
+	}
+	public void setConsanguinity(String consanguinity) {
+		this.consanguinity = consanguinity;
+	}
 	public boolean isAdopted() {
 		return adopted;
 	}
@@ -430,7 +441,7 @@ public class FamilyHistory implements Serializable, thing{
 		System.out.println("nodeList length =="+nodeList.getLength());
 		getPersonalInfo(authToken);
 		if(id != null && !id.equals("")) {
-		for (int i = 0;null!=nodeList && i <= nodeList.getLength(); i++) {
+		for (int i = 0;null!=nodeList && i <= 100; i++) {
 			this.setId("");this.setVersionStamp("");
 			getPersonalInfo(authToken);
 			this.checkFamilyHistoryExists(authToken);
@@ -475,7 +486,7 @@ public class FamilyHistory implements Serializable, thing{
         		}
 				
 				try {
-					
+					this.setConsanguinity("false");
 					expr = "/FamilyHistory/subject/patient/patientPerson/subjectOf2/clinicalObservation";
 					NodeList nodeList1 = (NodeList) xPath.compile(expr).evaluate(doc, XPathConstants.NODESET);
 					for (int m = 0;null!=nodeList1 && m < nodeList1.getLength(); m++) {
@@ -504,10 +515,20 @@ public class FamilyHistory implements Serializable, thing{
     				}else if(attributesList.item(k).getNodeValue().contains("adopted")){
     					this.setAdopted(true);
     				}else{
+    					this.setEstimatedAge("");
 		        		if((!(attributesList.item(k).getNodeValue().equalsIgnoreCase("weight")))&&(!(attributesList.item(k).getNodeValue().equalsIgnoreCase("height")))){
 		        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("originalText")){
-		        				this.setSelfCondition(attributesList.item(k).getNodeValue());
-		        				conList.add(this.getSelfCondition());
+		        				if(attributesList.item(k).getNodeValue().equalsIgnoreCase("Parental consanguinity indicated")){
+		        					this.setConsanguinity("true");
+		        				}else if(attributesList.item(k).getNodeValue().equalsIgnoreCase("pre-birth")){
+		        					this.setEstimatedAge("prebirth");
+		        					estimatedAge.add(this.getEstimatedAge());
+		        					System.out.println("prebirth=="+this.getEstimatedAge());
+		        				}
+		        				else{
+			        				this.setSelfCondition(attributesList.item(k).getNodeValue());
+			        				conList.add(this.getSelfCondition());
+		        				}
 		        			}
 		        			
 		        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("codeSystemName")){
@@ -519,7 +540,6 @@ public class FamilyHistory implements Serializable, thing{
 		        				System.out.println("code "+this.getSelfConditionCode());
 		        			}
 		        			
-		        		
 		        			            	
 		            	}
     				}
@@ -553,29 +573,47 @@ public class FamilyHistory implements Serializable, thing{
 	        			}
 	        		}
 			        }
-			        this.setEstimatedAge("");
-			        if((this.getAgeRangeLow().equals("30"))&&(this.getAgeRangeHigh().equals("39"))){
-						this.setEstimatedAge("thirties");
-					}
-					if((this.getAgeRangeLow().equals("20"))&&(this.getAgeRangeHigh().equals("29"))){
+			        
+			        if((this.getAgeRangeLow().equals("0"))&&(this.getAgeRangeHigh().equals("28"))){
+						this.setEstimatedAge("newborn");
+					}else if((this.getAgeRangeLow().equals("29"))&&(this.getAgeRangeHigh().equals("729"))){
+						this.setEstimatedAge("infant");
+					}else if((this.getAgeRangeLow().equals("2"))&&(this.getAgeRangeHigh().equals("10"))){
+						this.setEstimatedAge("child");
+					}else if((this.getAgeRangeLow().equals("11"))&&(this.getAgeRangeHigh().equals("19"))){
+						this.setEstimatedAge("teen");
+					}else if((this.getAgeRangeLow().equals("20"))&&(this.getAgeRangeHigh().equals("29"))){
 						this.setEstimatedAge("twenties");
-					}
-					if((this.getAgeRangeLow().equals("40"))&&(this.getAgeRangeHigh().equals("49"))){
+					}else if((this.getAgeRangeLow().equals("30"))&&(this.getAgeRangeHigh().equals("39"))){
+						this.setEstimatedAge("thirties");
+					}else if((this.getAgeRangeLow().equals("40"))&&(this.getAgeRangeHigh().equals("49"))){
 						this.setEstimatedAge("fourties");
-					}
-					if((this.getAgeRangeLow().equals("50"))&&(this.getAgeRangeHigh().equals("59"))){
+					}else if((this.getAgeRangeLow().equals("50"))&&(this.getAgeRangeHigh().equals("59"))){
 						this.setEstimatedAge("fifties");
-					}
-					if(this.getAgeRangeLow().equals("60")){
+					}else if(this.getAgeRangeLow().equals("60")){
 						this.setEstimatedAge("sixties");
+					}else{
+						this.setEstimatedAge("unknown");
 					}
 					if(this.getEstimatedAge()!=""){
 						estimatedAge.add(this.getEstimatedAge());
+					}
+					for(int e = 0; e< estimatedAge.size();e++){
+						System.out.println("estimated age length =="+estimatedAge.get(e));
 					}
 					}
 				}catch(Exception e){
 					e.printStackTrace();
 				}
+				for(int l=0;l<conList.size();l++){
+    				if(conCodeList.get(l).equalsIgnoreCase("other")){
+    					conCodeList.add(l, "EMPTY");
+    				}
+    			}
+				for(int l=0;l<conList.size();l++){
+					System.out.println("condition codes list = "+conCodeList.get(l));
+				}
+    		
 				if((weightFound)&&(conCodeList.size()>0)){
     				conCodeList.remove(0);
     			}
@@ -590,26 +628,44 @@ public class FamilyHistory implements Serializable, thing{
 				expr = "/FamilyHistory/subject/patient/patientPerson/birthTime/@value";
 				String birthDate = xPath.compile(expr).evaluate(doc);
 				setBirthDate(birthDate);
-									
-				expr = "/FamilyHistory/subject/patient/patientPerson/ethnicGroupCode/@displayName";
-				String ethnicity = xPath.compile(expr).evaluate(doc);
-				setSelfEthnicity(ethnicity);
-				expr = "/FamilyHistory/subject/patient/patientPerson/ethnicGroupCode/@code";
-				String ethCode = xPath.compile(expr).evaluate(doc);
-				setSelfEthnicityCode(ethCode);
-				expr = "/FamilyHistory/subject/patient/patientPerson/ethnicGroupCode/@codeSystemName";
-				String ethname = xPath.compile(expr).evaluate(doc);
-				setSelfEthnicitySystemName(ethname);
-				
-				expr = "/FamilyHistory/subject/patient/patientPerson/raceCode/@displayName";
-				String race = xPath.compile(expr).evaluate(doc);
-				setSelfRace(race);
-				expr = "/FamilyHistory/subject/patient/patientPerson/raceCode/@code";
-				String raceCode = xPath.compile(expr).evaluate(doc);
-				setSelfRaceCode(raceCode);
-				expr = "/FamilyHistory/subject/patient/patientPerson/raceCode/@codeSystemName";
-				String racename = xPath.compile(expr).evaluate(doc);
-				setSelfRaceCodeSystemName(racename);
+				ethnicities = new ArrayList<String>();
+				ethnicityCodes = new ArrayList<String>();
+				for(int e=0; e<10;e++){
+				expr = "/FamilyHistory/subject/patient/patientPerson/ethnicGroupCode["+e+"]/@displayName";
+					String ethnicity = xPath.compile(expr).evaluate(doc);
+					setSelfEthnicity(ethnicity);
+					if(this.getSelfEthnicity()!=""){
+						ethnicities.add(this.getSelfEthnicity());
+					}
+					expr = "/FamilyHistory/subject/patient/patientPerson/ethnicGroupCode["+e+"]/@code";
+					String ethCode = xPath.compile(expr).evaluate(doc);
+					if(this.getSelfEthnicityCode()!=""){
+						setSelfEthnicityCode(ethCode);
+					}
+					ethnicityCodes.add(this.getSelfEthnicityCode());
+					expr = "/FamilyHistory/subject/patient/patientPerson/ethnicGroupCode["+e+"]/@codeSystemName";
+					String ethname = xPath.compile(expr).evaluate(doc);
+					setSelfEthnicitySystemName(ethname);
+				}
+				races = new ArrayList<String>();
+				raceCodes = new ArrayList<String>();
+				for(int r = 0; r<18;r++){
+					expr = "/FamilyHistory/subject/patient/patientPerson/raceCode["+r+"]/@displayName";
+					String race = xPath.compile(expr).evaluate(doc);
+					setSelfRace(race);
+					if(this.getSelfRace()!=""){
+						races.add(this.getSelfRace());
+					}
+					expr = "/FamilyHistory/subject/patient/patientPerson/raceCode["+r+"]/@code";
+					String raceCode = xPath.compile(expr).evaluate(doc);
+					setSelfRaceCode(raceCode);
+					if(this.getSelfRaceCode()!=""){
+						raceCodes.add(this.getSelfRaceCode());
+					}
+					expr = "/FamilyHistory/subject/patient/patientPerson/raceCode["+r+"]/@codeSystemName";
+					String racename = xPath.compile(expr).evaluate(doc);
+					setSelfRaceCodeSystemName(racename);
+				}
 				
 				expr = "/FamilyHistory/subject/patient/patientPerson/id/@extension";
 				String id = xPath.compile(expr).evaluate(doc);
@@ -706,17 +762,21 @@ public class FamilyHistory implements Serializable, thing{
 			        infoBuilder.append("<kilograms>"+this.getWeight()+"</kilograms>");
 		        }
 		        infoBuilder.append("</weight>");
-		        if(this.getSelfRace()!=""){
+		        for(int r =0; r<races.size();r++){
 			        infoBuilder.append("<races version=\""+"1.0"+ "\">");
-			        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+this.getSelfRace() +"\" type=\""+this.getSelfRaceCodeSystemName() +"\" value=\""+this.getSelfRaceCode() +"\" version=\""+"3"+"\"/>");
+			        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+races.get(r) +"\" type=\""+this.getSelfRaceCodeSystemName() +"\" value=\""+raceCodes.get(r) +"\" version=\""+"3"+"\"/>");
 			        infoBuilder.append("</races>");
 		        }
-		        if(this.getSelfEthnicity()!=""){
+		        for(int e =0; e<ethnicities.size();e++){
 			        infoBuilder.append("<ethnicities>");
-			        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+this.getSelfEthnicity() +"\" type=\""+this.getSelfEthnicitySystemName() +"\" value=\""+this.getSelfEthnicityCode() +"\" version=\""+"3"+"\"/>");
+			        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+ethnicities.get(e) +"\" type=\""+this.getSelfEthnicitySystemName() +"\" value=\""+ethnicityCodes.get(e) +"\" version=\""+"3"+"\"/>");
 			        infoBuilder.append("</ethnicities>");
 		        }
-		        infoBuilder.append("<consanguinity>true</consanguinity>");
+		        if(this.getConsanguinity().equalsIgnoreCase("true")){
+		        	infoBuilder.append("<consanguinity>true</consanguinity>");
+		        }else{
+		        	infoBuilder.append("<consanguinity>false</consanguinity>");
+		        }
 		        infoBuilder.append("</fhh-extensions>");
 		        infoBuilder.append("</extension>");
 		        infoBuilder.append("<client-thing-id>"+this.getSelfId()+"</client-thing-id>");
@@ -726,6 +786,8 @@ public class FamilyHistory implements Serializable, thing{
 	        }
 			Node node = nodeList.item(i);
 			List<String> estimatedAgeList = new ArrayList<String>();
+			List<String> conList = new ArrayList<String>();
+    		List<String> conCodeList = new ArrayList<String>();
 			if(node.getNodeType() == Node.ELEMENT_NODE) {
 				
 	        	Element eElement = (Element) node;
@@ -756,33 +818,53 @@ public class FamilyHistory implements Serializable, thing{
 	        		}
 	        	}
 	        	this.setEthnicity("");
-	        	if(eElement.getElementsByTagName("ethnicGroupCode").item(0)!=null){
-		        	attributesList = eElement.getElementsByTagName("ethnicGroupCode").item(0).getAttributes();
-		        	for(int k=0;k<attributesList.getLength();k++){
-		        		System.out.println("Attribute: "
-		                        + attributesList.item(k).getNodeName() + " = "
-		                        + attributesList.item(k).getNodeValue());
-		        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("code"))
-		        			this.setEthnicityCode(attributesList.item(k).getNodeValue());
-		        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("codeSystemName"))
-		        			this.setEthnicitySystemName(attributesList.item(k).getNodeValue());
-		        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("displayName"))
-		        			this.setEthnicity(attributesList.item(k).getNodeValue());
+	        	ethnicities = new ArrayList<String>();
+	        	ethnicityCodes = new ArrayList<String>();
+	        	for(int e = 0; e< 10;e++){
+		        	if(eElement.getElementsByTagName("ethnicGroupCode").item(e)!=null){
+			        	attributesList = eElement.getElementsByTagName("ethnicGroupCode").item(e).getAttributes();
+			        	for(int k=0;k<attributesList.getLength();k++){
+			        		System.out.println("Attribute: "
+			                        + attributesList.item(k).getNodeName() + " = "
+			                        + attributesList.item(k).getNodeValue());
+			        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("code"))
+			        			this.setEthnicityCode(attributesList.item(k).getNodeValue());
+			        		if(this.getEthnicityCode()!=""){
+			        			ethnicityCodes.add(this.getEthnicityCode());
+			        		}
+			        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("codeSystemName"))
+			        			this.setEthnicitySystemName(attributesList.item(k).getNodeValue());
+			        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("displayName"))
+			        			this.setEthnicity(attributesList.item(k).getNodeValue());
+			        		if(this.getEthnicity()!=""){
+			        			ethnicities.add(this.getEthnicity());
+			        		}
+			        	}
 		        	}
 	        	}
 	        	this.setRace("");
-	        	if(eElement.getElementsByTagName("raceCode").item(0)!=null){
-		        	attributesList = eElement.getElementsByTagName("raceCode").item(0).getAttributes();
-		        	for(int k=0;k<attributesList.getLength();k++){
-		        		System.out.println("Attribute: "
-		                        + attributesList.item(k).getNodeName() + " = "
-		                        + attributesList.item(k).getNodeValue());
-		        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("code"))
-		        			this.setRaceCode(attributesList.item(k).getNodeValue());
-		        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("codeSystemName"))
-		        			this.setRaceCodeSystemName(attributesList.item(k).getNodeValue());
-		        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("displayName"))
-		        			this.setRace(attributesList.item(k).getNodeValue());
+	        	races = new ArrayList<String>();
+	        	raceCodes = new ArrayList<String>();
+	        	for(int r = 0; r < 18;r++){
+		        	if(eElement.getElementsByTagName("raceCode").item(r)!=null){
+			        	attributesList = eElement.getElementsByTagName("raceCode").item(r).getAttributes();
+			        	for(int k=0;k<attributesList.getLength();k++){
+			        		System.out.println("Attribute: "
+			                        + attributesList.item(k).getNodeName() + " = "
+			                        + attributesList.item(k).getNodeValue());
+			        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("code"))
+			        			this.setRaceCode(attributesList.item(k).getNodeValue());
+			        		if(this.getRaceCode()!=""){
+			        			raceCodes.add(this.getRaceCode());
+			        		}
+			        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("codeSystemName"))
+			        			this.setRaceCodeSystemName(attributesList.item(k).getNodeValue());
+			        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("displayName"))
+			        			this.setRace(attributesList.item(k).getNodeValue());
+			        		if(this.getRace()!=""){
+			        			races.add(this.getRace());
+			        		}
+			        	}
 		        	}
 	        	}
 	        	this.setParentId(""); this.setRelativeId("");
@@ -822,9 +904,7 @@ public class FamilyHistory implements Serializable, thing{
 	        	}
 	        	this.setCondition("");
 	        	this.setResolution("");
-	        	if(eElement.hasAttribute("Age at Death")){
-	        		System.out.println("testing attribute age at death");
-	        	}
+	        	
 	        	
 	        	if(eElement.getElementsByTagName("clinicalObservation").item(0)!=null){
 	        		this.setCondition("");
@@ -839,6 +919,8 @@ public class FamilyHistory implements Serializable, thing{
 		        			}
 	        			}
 	        		}
+//	        		List<String> conList = new ArrayList<String>();
+//	        		List<String> conCodeList = new ArrayList<String>();
 	        		twinStatus = ""; adopted = false;
 	        		if(eElement.getElementsByTagName("code").item(0)!=null){
 	        			attributesList = eElement.getElementsByTagName("code").item(0).getAttributes();
@@ -857,9 +939,12 @@ public class FamilyHistory implements Serializable, thing{
 	        				}
 	        			}
 	        		}
-			        		if(eElement.getElementsByTagName("code").item(2)!=null){
+	        		
+	        		for(int d = 0;d<25;d++){
+	        			this.setEstimatedAge("");
+			        		if(eElement.getElementsByTagName("code").item(d)!=null){
 			        			for(int k=0;k<attributesList.getLength();k++){
-				        		attributesList = eElement.getElementsByTagName("code").item(2).getAttributes();
+				        		attributesList = eElement.getElementsByTagName("code").item(d).getAttributes();
 				        		System.out.println("condition Attribute: " + k + ":" 
 				                        + attributesList.item(k).getNodeName() + " = "
 				                        + attributesList.item(k).getNodeValue());
@@ -870,85 +955,85 @@ public class FamilyHistory implements Serializable, thing{
 		        				}else if(attributesList.item(k).getNodeValue().contains("adopted")){
 		        					this.setAdopted(true);
 		        				}else{
-				        		if(!(attributesList.item(k).getNodeValue().equalsIgnoreCase("Age at Death"))){
-				        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("displayName")){
-				        				this.setCondition(attributesList.item(k).getNodeValue());
+		        					if(attributesList.item(k).getNodeValue().equalsIgnoreCase("death")){
+			        					this.setResolution("death");
+			        				}
+//				        		if(!(attributesList.item(k).getNodeValue().equalsIgnoreCase("Age at Death"))){
+				        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("originalText")){
+				        				if(attributesList.item(k).getNodeValue().equalsIgnoreCase("pre-birth")){
+				        					this.setEstimatedAge("prebirth");
+				        					System.out.println("prebirth=="+this.getEstimatedAge());
+				        					estimatedAgeList.add(this.getEstimatedAge());
+				        				}else{
+					        				this.setCondition(attributesList.item(k).getNodeValue());
+					        				if(this.getCondition()!=""){
+					        					conList.add(this.getCondition());
+					        				}
+				        				}
 				        			}
 				        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("codeSystemName")){
 				        				this.setConditionCodeSystemName(attributesList.item(k).getNodeValue());
 				        				this.setConditionCodeSystemName(attributesList.item(k).getNodeValue());
 				        			}
 				        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("code")){
-				        				this.setConditionCode(attributesList.item(k).getNodeValue());
-				        				this.setDeathConditionCode(attributesList.item(k).getNodeValue());
+				        				
+					        				this.setConditionCode(attributesList.item(k).getNodeValue());
+					        				this.setDeathConditionCode(attributesList.item(k).getNodeValue());
+					        				if(this.getConditionCode()!=""){
+					        					conCodeList.add(this.getConditionCode());
+					        				
+				        				}
 				        			}
-				        		}
-				        		else{
-				        			this.setResolution("death");
-				        			}
 			        			}
 			        			}
 			        		}
-			        		if(eElement.getElementsByTagName("code").item(3)!=null){
-			        			for(int k=0;k<attributesList.getLength();k++){
-				        		attributesList = eElement.getElementsByTagName("code").item(3).getAttributes();
-				        		System.out.println("condition Attribute: "
-				                        + attributesList.item(k).getNodeName() + " = "
-				                        + attributesList.item(k).getNodeValue());
-				        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("displayName")){
-				        			if(!(attributesList.item(k).getNodeValue().equalsIgnoreCase("Estimated Age"))){
-				        				this.setDeathCondition(attributesList.item(k).getNodeValue());
-				        				this.setCondition(attributesList.item(k).getNodeValue());
-				        			}
-				        		}
-				        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("codeSystemName")){
-			        				this.setDeathConditionSystemName(attributesList.item(k).getNodeValue());
-			        				this.setConditionCodeSystemName(attributesList.item(k).getNodeValue());
-			        			}
-			        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("code")){
-			        				this.setDeathConditionCode(attributesList.item(k).getNodeValue());
-			        				this.setConditionCode(attributesList.item(k).getNodeValue());
-			        			}
-				        		
-			        		}
-		        		}
-			        		if(eElement.getElementsByTagName("low").item(0)!=null){
-			        			attributesList = eElement.getElementsByTagName("low").item(0).getAttributes();
-			        			for(int k=0;k<attributesList.getLength();k++){
-			        				System.out.println("low relative attributes: "+ attributesList.item(k).getNodeName() + " = "
-					                        + attributesList.item(k).getNodeValue());
-			        				this.setAgeRangeLow(attributesList.item(k).getNodeValue());
-			        			}
-			        		}
-			        		if(eElement.getElementsByTagName("high").item(0)!=null){
-			        			attributesList = eElement.getElementsByTagName("high").item(0).getAttributes();
-			        			for(int k=0;k<attributesList.getLength();k++){
-			        				System.out.println("high relative attributes: "+ attributesList.item(k).getNodeName() + " = "
-					                        + attributesList.item(k).getNodeValue());
-			        				this.setAgeRangeHigh(attributesList.item(k).getNodeValue());
-			        			}
-			        		}
-			        		this.setEstimatedAge("");
-					        if((this.getAgeRangeLow().equals("30"))&&(this.getAgeRangeHigh().equals("39"))){
-								this.setEstimatedAge("thirties");
-							}
-							if((this.getAgeRangeLow().equals("20"))&&(this.getAgeRangeHigh().equals("29"))){
-								this.setEstimatedAge("twenties");
-							}
-							if((this.getAgeRangeLow().equals("40"))&&(this.getAgeRangeHigh().equals("49"))){
-								this.setEstimatedAge("fourties");
-							}
-							if((this.getAgeRangeLow().equals("50"))&&(this.getAgeRangeHigh().equals("59"))){
-								this.setEstimatedAge("fifties");
-							}
-							if(this.getAgeRangeLow().equals("60")){
-								this.setEstimatedAge("sixties");
-							}
-							if(this.getEstimatedAge()!=""){
-								estimatedAgeList.add(this.getEstimatedAge());
-							}
+	        		}
+	        		if(eElement.getElementsByTagName("low").item(0)!=null){
+	        			attributesList = eElement.getElementsByTagName("low").item(0).getAttributes();
+	        			for(int k=0;k<attributesList.getLength();k++){
+	        				System.out.println("low relative attributes: "+ attributesList.item(k).getNodeName() + " = "
+			                        + attributesList.item(k).getNodeValue());
+	        				this.setAgeRangeLow(attributesList.item(k).getNodeValue());
+	        			}
+	        		}
+	        		if(eElement.getElementsByTagName("high").item(0)!=null){
+	        			attributesList = eElement.getElementsByTagName("high").item(0).getAttributes();
+	        			for(int k=0;k<attributesList.getLength();k++){
+	        				System.out.println("high relative attributes: "+ attributesList.item(k).getNodeName() + " = "
+			                        + attributesList.item(k).getNodeValue());
+	        				this.setAgeRangeHigh(attributesList.item(k).getNodeValue());
+	        			}
+	        		}
+	        		
+	        		 if((this.getAgeRangeLow().equals("0"))&&(this.getAgeRangeHigh().equals("28"))){
+							this.setEstimatedAge("newborn");
+						}else if((this.getAgeRangeLow().equals("29"))&&(this.getAgeRangeHigh().equals("729"))){
+							this.setEstimatedAge("infant");
+						}else if((this.getAgeRangeLow().equals("2"))&&(this.getAgeRangeHigh().equals("10"))){
+							this.setEstimatedAge("child");
+						}else if((this.getAgeRangeLow().equals("11"))&&(this.getAgeRangeHigh().equals("19"))){
+							this.setEstimatedAge("teen");
+						}else if((this.getAgeRangeLow().equals("20"))&&(this.getAgeRangeHigh().equals("29"))){
+							this.setEstimatedAge("twenties");
+						}else if((this.getAgeRangeLow().equals("30"))&&(this.getAgeRangeHigh().equals("39"))){
+							this.setEstimatedAge("thirties");
+						}else if((this.getAgeRangeLow().equals("40"))&&(this.getAgeRangeHigh().equals("49"))){
+							this.setEstimatedAge("fourties");
+						}else if((this.getAgeRangeLow().equals("50"))&&(this.getAgeRangeHigh().equals("59"))){
+							this.setEstimatedAge("fifties");
+						}else if(this.getAgeRangeLow().equals("60")){
+							this.setEstimatedAge("sixties");
+						}else{
+							this.setEstimatedAge("unknown");
+						}
+					if(this.getEstimatedAge()!=""){
+						estimatedAgeList.add(this.getEstimatedAge());
+					}
 							
 	        	}
+	        	for(int e = 0; e< estimatedAgeList.size();e++){
+					System.out.println("estimated ages =="+estimatedAgeList.get(e));
+				}
 	        	this.setBirthDate("");
 	        	if(eElement.getElementsByTagName("birthTime").item(0)!=null){
 	        		
@@ -974,10 +1059,10 @@ public class FamilyHistory implements Serializable, thing{
 	        infoBuilder.append(FamilyHistory.familyHistoryType);
 	        infoBuilder.append("</type-id>");
 			infoBuilder.append("<data-xml><family-history>");
-			if(this.getCondition()!=""){
-				infoBuilder.append("<condition><name><text>").append(getCondition()).append("</text>");
+			for(int d = 0;d < conList.size();d++){
+				infoBuilder.append("<condition><name><text>").append(conList.get(d)).append("</text>");
 				infoBuilder.append("<code>");
-				infoBuilder.append("<value>").append(this.getConditionCode()).append("</value>");
+				infoBuilder.append("<value>").append(conCodeList.get(d)).append("</value>");
 				infoBuilder.append("<family>urn:gov.familyhistory.hl7</family>");
 				infoBuilder.append("<type>").append(this.getConditionCodeSystemName()).append("</type>");
 				infoBuilder.append("<version>3</version>");
@@ -992,29 +1077,33 @@ public class FamilyHistory implements Serializable, thing{
 				infoBuilder.append("<type>hhs-onset-date-codes</type>");
 				infoBuilder.append("<version>3</version>");
 				infoBuilder.append("</code>");
-				infoBuilder.append("</name></condition>");
-			}
-			if(this.getResolution()!=""){
-				infoBuilder.append("<condition><name><text>").append(getDeathCondition()).append("</text>");
-				infoBuilder.append("<code>");
-				infoBuilder.append("<value>").append(this.getDeathConditionCode()).append("</value>");
-				infoBuilder.append("<family>urn:gov.familyhistory.hl7</family>");
-				infoBuilder.append("<type>").append(this.getDeathConditionSystemName()).append("</type>");
-				infoBuilder.append("<version>3</version>");
-				infoBuilder.append("</code>");
-				infoBuilder.append("<code>");
-				if(estimatedAgeList.size()>0){
-					infoBuilder.append("<value>ageRange.").append(estimatedAgeList.get(0)).append("</value>");
-				}else{
-					infoBuilder.append("<value>ageRange.unknown</value>");
+				infoBuilder.append("</name>");
+				if(this.getResolution()!=""){
+					infoBuilder.append("<resolution>death</resolution>");
 				}
-				infoBuilder.append("<family>hhs</family>");
-				infoBuilder.append("<type>hhs-onset-date-codes</type>");
-				infoBuilder.append("<version>3</version>");
-				infoBuilder.append("</code>");
-				infoBuilder.append("</name><resolution>death</resolution></condition>");
-				
+				infoBuilder.append("</condition>");
 			}
+//			if(this.getResolution()!=""){
+//				infoBuilder.append("<condition><name><text>").append(getDeathCondition()).append("</text>");
+//				infoBuilder.append("<code>");
+//				infoBuilder.append("<value>").append(this.getDeathConditionCode()).append("</value>");
+//				infoBuilder.append("<family>urn:gov.familyhistory.hl7</family>");
+//				infoBuilder.append("<type>").append(this.getDeathConditionSystemName()).append("</type>");
+//				infoBuilder.append("<version>3</version>");
+//				infoBuilder.append("</code>");
+//				infoBuilder.append("<code>");
+//				if(estimatedAgeList.size()>0){
+//					infoBuilder.append("<value>ageRange.").append(estimatedAgeList.get(0)).append("</value>");
+//				}else{
+//					infoBuilder.append("<value>ageRange.unknown</value>");
+//				}
+//				infoBuilder.append("<family>hhs</family>");
+//				infoBuilder.append("<type>hhs-onset-date-codes</type>");
+//				infoBuilder.append("<version>3</version>");
+//				infoBuilder.append("</code>");
+//				infoBuilder.append("</name><resolution>death</resolution></condition>");
+//				
+//			}
 			infoBuilder.append("<relative><relationship><text>");
 			infoBuilder.append(this.getRelation());
 	        infoBuilder.append("</text><code>");
@@ -1062,14 +1151,14 @@ public class FamilyHistory implements Serializable, thing{
 	        }else{
 	        	infoBuilder.append("<adopted>false</adopted>");
 	        }
-	        if(this.getRace()!=""){
+	        for(int r=0;r<races.size();r++){
 		        infoBuilder.append("<races version=\""+"1.0"+ "\">");
-		        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+this.getRace() +"\" type=\""+this.getRaceCodeSystemName() +"\" value=\""+this.getRaceCode() +"\" version=\""+"3"+"\"/>");
+		        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+races.get(r) +"\" type=\""+this.getRaceCodeSystemName() +"\" value=\""+raceCodes.get(r) +"\" version=\""+"3"+"\"/>");
 		        infoBuilder.append("</races>");
 	        }
-	        if(this.getEthnicity()!=""){
+	        for(int e=0;e<ethnicities.size();e++){
 		        infoBuilder.append("<ethnicities>");
-		        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+this.getEthnicity() +"\" type=\""+this.getEthnicitySystemName() +"\" value=\""+this.getEthnicityCode() +"\" version=\""+"3"+"\"/>");
+		        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+ethnicities.get(e) +"\" type=\""+this.getEthnicitySystemName() +"\" value=\""+ethnicityCodes.get(e) +"\" version=\""+"3"+"\"/>");
 		        infoBuilder.append("</ethnicities>");
 	        }
 	        infoBuilder.append("<consanguinity>false</consanguinity>");
@@ -1110,7 +1199,7 @@ public class FamilyHistory implements Serializable, thing{
 	}
 	private void checkFamilyHistoryExists(String authToken) {
 		// TODO Auto-generated method stub
-		System.out.println("Checking if family history exists");
+//		System.out.println("Checking if family history exists");
 		StringBuilder infoBuilder = new StringBuilder();
 		if(id != null && !id.equals("")) {
 			infoBuilder.append("<info>");
@@ -1134,7 +1223,7 @@ public class FamilyHistory implements Serializable, thing{
 			RequestTemplate template = new RequestTemplate(ConnectionFactory.getConnection());
 			template.makeRequest(request, personInfo);
 		}
-		System.out.println("FamilyHistory removed successfully");
+//		System.out.println("FamilyHistory removed successfully");
 		
 	}
 	private void setupFamilyHistory(String xmlData) {

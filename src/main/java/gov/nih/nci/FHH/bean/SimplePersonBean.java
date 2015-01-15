@@ -48,12 +48,12 @@ public class SimplePersonBean {
 					person.put("date_of_birth", date.get("m")+"/"+date.get("d")+"/"+date.get("y"));
 					
 				}
-				if(personal.has("ethnicity")){
-					JSONObject races = personal.getJSONObject("ethnicity");
-					Map<String, Boolean> race = new HashMap<String, Boolean>();
-					race.put(races.get("text").toString(), true);
-					person.put("ethnicity", race);
-				}
+//				if(personal.has("ethnicity")){
+//					JSONObject races = personal.getJSONObject("ethnicity");
+//					Map<String, Boolean> race = new HashMap<String, Boolean>();
+//					race.put(races.get("text").toString(), true);
+//					person.put("ethnicity", race);
+//				}
 			}
 			List<Map<String, String>> healthHistoryList = new ArrayList<Map<String,String>>();
 //			if(dataXML.has("condition")){
@@ -101,8 +101,6 @@ public class SimplePersonBean {
 						if(conditions.getJSONObject(j).has("resolution")){
 							if(conditions.getJSONObject(j).getString("resolution").equalsIgnoreCase("death")){
 								relMap.put("is_alive", "dead");
-							}else{
-								relMap.put("is_alive", "alive");
 							}
 							if(conditions.getJSONObject(j).has("name")){
 								JSONObject name = conditions.getJSONObject(j).getJSONObject("name");
@@ -122,6 +120,8 @@ public class SimplePersonBean {
 									}
 								}
 							}
+						}else{
+							relMap.put("is_alive", "alive");
 						}
 						if(conditions.getJSONObject(j).has("name")){
 							healthHistory = new HashMap<String, Object>();
@@ -140,8 +140,9 @@ public class SimplePersonBean {
 								}
 							
 							}
-							healthHistoryList.add(healthHistory);
+							
 						}
+						healthHistoryList.add(healthHistory);
 						
 					}
 					
@@ -149,6 +150,32 @@ public class SimplePersonBean {
 				if(condition instanceof JSONObject){
 					JSONObject cond = (JSONObject) condition;
 					healthHistoryList = new ArrayList<Map<String,Object>>();
+					healthHistory = new HashMap<String, Object>();
+					if(cond.has("resolution")){
+						if(cond.getString("resolution").equalsIgnoreCase("death")){
+							relMap.put("is_alive", "dead");
+						}
+						if(cond.has("name")){
+							JSONObject name = cond.getJSONObject("name");
+							relMap.put("cause_of_death", name.get("text"));
+							relMap.put("detailed_cause_of_death", name.get("text"));
+							if(name.has("code")){
+								JSONArray codes = name.getJSONArray("code");
+								relMap.put("cause_of_death_code", codes.getJSONObject(0).get("type")+"-"+codes.getJSONObject(0).get("value"));
+								relMap.put("cause_of_death_system", codes.getJSONObject(0).get("type"));
+								if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("sixties")){
+									relMap.put("Age At Diagnosis", "senior");
+									relMap.put("estimated_death_age", "senior");
+								}
+								else{
+									relMap.put("Age At Diagnosis", codes.getJSONObject(1).getString("value").substring(9));
+									relMap.put("estimated_death_age", codes.getJSONObject(1).getString("value").substring(9));
+								}
+							}
+						}
+					}else{
+						relMap.put("is_alive", "alive");
+					}
 					if(cond.has("name")){
 						JSONObject name = cond.getJSONObject("name");
 						healthHistory.put("Disease Name", name.get("text"));
@@ -170,6 +197,8 @@ public class SimplePersonBean {
 					
 				}
 				
+			}else{
+				relMap.put("is_alive", "alive");
 			}
 			relMap.put("Health History", healthHistoryList);
 			if(familyHistory.has("relative")){
@@ -256,14 +285,14 @@ public class SimplePersonBean {
 							Object ethnicities = fhhExtension.get("ethnicities");
 							if(ethnicities instanceof JSONArray){
 								JSONArray ethnicityList = (JSONArray) ethnicities;
+								Map<String, Object> ethnicity = new HashMap<String, Object>();
 								for(int l=0;l<ethnicityList.length();l++){
 									if(ethnicityList.getJSONObject(l).has("code")){
 										JSONObject code = ethnicityList.getJSONObject(l).getJSONObject("code");
-										Map<String, Object> ethnicity = new HashMap<String, Object>();
 										ethnicity.put(code.get("name").toString(), true);
-										person.put("ethnicity", ethnicity);
 									}
 								}
+								person.put("ethnicity", ethnicity);
 							}
 							if(ethnicities instanceof JSONObject){
 								JSONObject ethObj = (JSONObject) ethnicities;
@@ -316,7 +345,10 @@ public class SimplePersonBean {
 								person.put("weight_unit", "kilograms");
 								person.put("weight", weight.get("kilograms"));
 							}
+						}if(fhhExtension.has("consanguinity")){
+							person.put("consanguinity", fhhExtension.get("consanguinity"));
 						}
+						
 						if(fhhExtension.has("height")){
 							JSONObject height = fhhExtension.getJSONObject("height");
 							if(height.get("centemiters")!=""){
@@ -335,10 +367,11 @@ public class SimplePersonBean {
 						Object ethnicities = fhhExtension.get("ethnicities");
 						if(ethnicities instanceof JSONArray){
 							JSONArray ethnicityList = (JSONArray) ethnicities;
+							Map<String, Object> ethnicity = new HashMap<String, Object>();
 							for(int l=0;l<ethnicityList.length();l++){
 								if(ethnicityList.getJSONObject(l).has("code")){
 									JSONObject code = ethnicityList.getJSONObject(l).getJSONObject("code");
-									Map<String, Object> ethnicity = new HashMap<String, Object>();
+									
 									ethnicity.put(code.get("name").toString(), true);
 									relMap.put("ethnicity", ethnicity);
 								}
@@ -365,10 +398,11 @@ public class SimplePersonBean {
 						Object races = fhhExtension.get("races");
 						if(races instanceof JSONArray){
 							JSONArray raceList = (JSONArray) races;
+							Map<String, Object> race = new HashMap<String, Object>();
 							for(int k=0;k<raceList.length();k++){
 								if(raceList.getJSONObject(k).has("code")){
 									JSONObject code = raceList.getJSONObject(k).getJSONObject("code");
-									Map<String, Object> race = new HashMap<String, Object>();
+									
 									race.put(code.getString("name"), true);
 									relMap.put("race", race);
 								}
@@ -482,12 +516,12 @@ public class SimplePersonBean {
 						person.put("nephew_"+nep, relMap);
 						nep++;
 					}
-					else if(relation.get("text").toString().equalsIgnoreCase("Grand Son")){
+					else if(relation.get("text").toString().equalsIgnoreCase("Grandson")){
 						relMap.put("relationship", "grand_son");
 						person.put("grand_son_"+gs, relMap);
 						gs++;
 					}
-					else if(relation.get("text").toString().equalsIgnoreCase("Grand Daughter")){
+					else if(relation.get("text").toString().equalsIgnoreCase("Granddaughter")){
 						relMap.put("relationship", "grand_daughter");
 						person.put("grand_daughter_"+gd, relMap);
 						gd++;
@@ -503,6 +537,8 @@ public class SimplePersonBean {
 						
 						Map<String, Object> race = (Map<String, Object>) self.get("race");
 						person.put("race", race);
+						Map<String, Object> ethnicity = (Map<String, Object>) self.get("ethnicity");
+						person.put("ethnicity", ethnicity);
 						System.out.println("health condition =="+self.get("Health History"));
 						person.put("Health History", self.get("Health History"));
 						System.out.println(self.get("race"));
