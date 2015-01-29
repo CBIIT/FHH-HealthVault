@@ -32,11 +32,27 @@ public class WeightInfo implements thing {
 	
 	private String id = "";
 	private String versionStamp = "";
-	private String value = "";
-	private String unit = "";
+	public String value = "";
+	public String unit = "";
 	public static String weight = "";
 	public static String weightUnit = "";
 	
+	public static String getWeight() {
+		return weight;
+	}
+
+	public static void setWeight(String weight) {
+		WeightInfo.weight = weight;
+	}
+
+	public static String getWeightUnit() {
+		return weightUnit;
+	}
+
+	public static void setWeightUnit(String weightUnit) {
+		WeightInfo.weightUnit = weightUnit;
+	}
+
 	public String getValue() {
 		return value;
 	}
@@ -88,6 +104,7 @@ public class WeightInfo implements thing {
 		
 		try {
 			String expr = "/FamilyHistory/subject/patient/patientPerson/subjectOf2/clinicalObservation";
+			this.setWeight(""); this.setWeightUnit("");
 			NodeList nodeList = (NodeList) xPath.compile(expr).evaluate(doc, XPathConstants.NODESET);
 			for (int i = 0;null!=nodeList && i < nodeList.getLength(); i++) {
 		        Node node = nodeList.item(i);
@@ -109,16 +126,17 @@ public class WeightInfo implements thing {
 		        	
 		        	if(weightFound) {
 		        		if(eElement.getElementsByTagName("value").item(0)!=null){
+		        			
 		        		NamedNodeMap vAttributesList = eElement.getElementsByTagName("value").item(0).getAttributes();
 			        	for (int j = 0; j < vAttributesList.getLength(); j++) {
 			        		if( vAttributesList.item(j).getNodeName().equals("value")) {
 			        			System.out.println("Weight Value "+vAttributesList.item(j).getNodeValue());
 			        			setValue(vAttributesList.item(j).getNodeValue());
-			        			weight = this.getValue();
+			        			this.setWeight(this.getValue());
 			        		}
 			        		if( vAttributesList.item(j).getNodeName().equals("unit")) {
 			        			setUnit(vAttributesList.item(j).getNodeValue());
-			        			weightUnit = this.getUnit();
+			        			this.setWeightUnit(this.getUnit());
 			        		}
 			                System.out.println("Attribute: "
 			                        + vAttributesList.item(j).getNodeName() + " = "

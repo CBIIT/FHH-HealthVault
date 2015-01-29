@@ -9,7 +9,10 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -84,12 +87,27 @@ public class FamilyHistory implements Serializable, thing{
 	private String parentId = "";
 	private String twinStatus = "";
 	boolean adopted = false;
-	private List<String> ethnicities;
-	private List<String> ethnicityCodes;
-	private List<String> races;
-	private List<String> raceCodes;
+//	private List<String> races;
+//	private List<String> raceCodes;
 	private String consanguinity;
+	private String dobAgeLow = "";
+	private String dobAgeHigh = "";
+	List<Map<String, Object>> conditions = new ArrayList<Map<String,Object>>();
+	List<Map<String, Object>> ethnicities = new ArrayList<Map<String,Object>>();
+	List<Map<String, Object>> races = new ArrayList<Map<String,Object>>();
 	
+	public String getDobAgeLow() {
+		return dobAgeLow;
+	}
+	public void setDobAgeLow(String dobAgeLow) {
+		this.dobAgeLow = dobAgeLow;
+	}
+	public String getDobAgeHigh() {
+		return dobAgeHigh;
+	}
+	public void setDobAgeHigh(String dobAgeHigh) {
+		this.dobAgeHigh = dobAgeHigh;
+	}
 	public String getConsanguinity() {
 		return consanguinity;
 	}
@@ -440,32 +458,33 @@ public class FamilyHistory implements Serializable, thing{
 		NodeList nodeList = (NodeList) xPath.compile(expr).evaluate(doc, XPathConstants.NODESET);
 		System.out.println("nodeList length =="+nodeList.getLength());
 		getPersonalInfo(authToken);
-		if(id != null && !id.equals("")) {
 		for (int i = 0;null!=nodeList && i <= 100; i++) {
+			if(id != null && !id.equals("")) {
 			this.setId("");this.setVersionStamp("");
 			getPersonalInfo(authToken);
 			this.checkFamilyHistoryExists(authToken);
+			}else{
+				break;
 			}
 		}
+		
 		StringBuilder infoBuilder = new StringBuilder();
 
 		infoBuilder.append("<info>");
        
 		for (int i = 0;null!=nodeList && i < nodeList.getLength(); i++) {
-			WeightInfo weight = new WeightInfo();
-			HeightInfo height = new HeightInfo();
-			boolean heightFound = false; boolean weightFound = false;
-			System.out.println("printing height and weight");
-			this.setWeight(weight.weight);
-			this.setWeightUnit(weight.weightUnit);
-			this.setHeight(height.height);
-			this.setHeightUnit(height.heightUnit);
+			
 	        
 	        if(i==0){
+	        	this.setConsanguinity("false");
+	        	 conditions = new ArrayList<Map<String,Object>>();
+	        	WeightInfo weight = new WeightInfo();
+				HeightInfo height = new HeightInfo();
+				this.setWeight(weight.weight);
+				this.setWeightUnit(weight.weightUnit);
+				this.setHeight(height.getHeight());
+				this.setHeightUnit(height.getHeightUnit());
 	        	this.setId("");this.setVersionStamp("");
-	        	List<String> conCodeList = new ArrayList<String>();
-	        	List<String> conList = new ArrayList<String>();
-	        	List<String> estimatedAge = new ArrayList<String>();
 				getPersonalInfo(authToken);
 //				infoBuilder.append("<info>");
 		        infoBuilder.append("<thing>");
@@ -486,141 +505,116 @@ public class FamilyHistory implements Serializable, thing{
         		}
 				
 				try {
-					this.setConsanguinity("false");
+			
 					expr = "/FamilyHistory/subject/patient/patientPerson/subjectOf2/clinicalObservation";
-					NodeList nodeList1 = (NodeList) xPath.compile(expr).evaluate(doc, XPathConstants.NODESET);
-					for (int m = 0;null!=nodeList1 && m < nodeList1.getLength(); m++) {
-					Node node = nodeList1.item(m);
-			        if(node.getNodeType() == Node.ELEMENT_NODE) {
-			        	Element eElement = (Element) node;
-					if(eElement.getElementsByTagName("code").item(0)!=null){
-						NamedNodeMap attributesList = eElement.getElementsByTagName("code").item(0).getAttributes();
-	        			for(int k=0;k<attributesList.getLength();k++){
-	        				
-	        				this.setSelfCondition("");
-	        				
-		        		System.out.println("condition Attribute: " + k + ":" 
-		                        + attributesList.item(k).getNodeName() + " = "
-		                        + attributesList.item(k).getNodeValue());
-		        	if(attributesList.item(k).getNodeValue().equalsIgnoreCase("weight")){
-		        		 weightFound = true;
-		        	}
-		        	if(attributesList.item(k).getNodeValue().equalsIgnoreCase("height")){
-		        		 heightFound = true;
-		        	}
-		        	if(attributesList.item(k).getNodeValue().contains("Fraternal twin")){
-    					this.setTwinStatus("FRATERNAL");
-    				}else if(attributesList.item(k).getNodeValue().contains("Identical twin")){
-    					this.setTwinStatus("IDENTICAL");
-    				}else if(attributesList.item(k).getNodeValue().contains("adopted")){
-    					this.setAdopted(true);
-    				}else{
-    					this.setEstimatedAge("");
-		        		if((!(attributesList.item(k).getNodeValue().equalsIgnoreCase("weight")))&&(!(attributesList.item(k).getNodeValue().equalsIgnoreCase("height")))){
-		        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("originalText")){
-		        				if(attributesList.item(k).getNodeValue().equalsIgnoreCase("Parental consanguinity indicated")){
-		        					this.setConsanguinity("true");
-		        				}else if(attributesList.item(k).getNodeValue().equalsIgnoreCase("pre-birth")){
-		        					this.setEstimatedAge("prebirth");
-		        					estimatedAge.add(this.getEstimatedAge());
-		        					System.out.println("prebirth=="+this.getEstimatedAge());
+					NodeList nodeList2 = (NodeList) xPath.compile(expr).evaluate(doc, XPathConstants.NODESET);
+					for (int m = 0;null!=nodeList2 && m < nodeList2.getLength(); m++) {
+						Map<String, Object> conditionMap = new HashMap<String, Object>();
+						Node clinicalObservation = nodeList2.item(m);
+						Node condition = clinicalObservation.getFirstChild();
+						if(condition.hasAttributes()){
+							NamedNodeMap nodeMap = condition.getAttributes();
+							for(int n = 0; n<nodeMap.getLength();n++){
+								Node tempNode = nodeMap.item(n);
+		    					System.out.println("Attribute Proband Name : "+tempNode.getNodeName()+"Attribute Proband Value : "+tempNode.getNodeValue());
+		    					if((tempNode.getNodeValue().contains("Fraternal twin"))&&(tempNode.getNodeName().equalsIgnoreCase("displayName"))){
+		        					this.setTwinStatus("FRATERNAL");
+		        					conditionMap.put("displayName", "FRATERNAL");
+		        				}else if((tempNode.getNodeValue().contains("Identical twin"))&&(tempNode.getNodeName().equalsIgnoreCase("displayName"))){
+		        					this.setTwinStatus("IDENTICAL");
+		        					conditionMap.put("displayName", "IDENTICAL");
+		        				}else if((tempNode.getNodeValue().contains("adopted"))&&(tempNode.getNodeName().equalsIgnoreCase("displayName"))){
+		        					this.setAdopted(true);
+		        					conditionMap.put("displayName", "adopted");
+		        				}else{
+			    					if(tempNode.getNodeName().equalsIgnoreCase("displayName")){
+			    						conditionMap.put("displayName", tempNode.getNodeValue());
+			    					}
+			    					if(tempNode.getNodeName().equalsIgnoreCase("codeSystemName")){
+			    						conditionMap.put("conditionCodeSystemName", tempNode.getNodeValue());
+			    					}
+			    					if(tempNode.getNodeName().equalsIgnoreCase("code")){
+			    						if(tempNode.getNodeValue().equalsIgnoreCase("other")){
+			    							conditionMap.put("conditionCode", "EMPTY");
+			    	    				}
+			    						conditionMap.put("conditionCode", tempNode.getNodeValue());
+			    					}
+			    					if(tempNode.getNodeName().equalsIgnoreCase("originalText")){
+			    						if(tempNode.getNodeValue().equalsIgnoreCase("Parental consanguinity indicated")){
+				        					this.setConsanguinity("true");
+				        				}else{
+				        					conditionMap.put("condition", tempNode.getNodeValue());
+				        				}
+			    					}
 		        				}
-		        				else{
-			        				this.setSelfCondition(attributesList.item(k).getNodeValue());
-			        				conList.add(this.getSelfCondition());
-		        				}
+							}
+						}
+						
+						if(condition.getNextSibling()!=null){
+		        			if(condition.getNextSibling().getNodeName().contains("subject")){
+			        			Node subject = condition.getNextSibling();
+			        			Node dataEstimatedAge = subject.getFirstChild();
+			        			Node estimateAge = dataEstimatedAge.getFirstChild();
+			        			if(estimateAge.hasAttributes()){
+			        				NamedNodeMap nodeMap = estimateAge.getAttributes();
+			        				for(int a = 0; a<nodeMap.getLength();a++){
+			        					Node tempNode = nodeMap.item(a);
+				    					System.out.println("Attribute Name : "+tempNode.getNodeName()+"Attribute Value : "+tempNode.getNodeValue());
+				    					if(tempNode.getNodeName().equalsIgnoreCase("originalText")){
+				    						if(tempNode.getNodeValue().equalsIgnoreCase("pre-birth")){
+				    							conditionMap.put("ageAtDiagnosis", "prebirth");
+				    						}else if(tempNode.getNodeValue().equalsIgnoreCase("unknown")){
+				    							conditionMap.put("ageAtDiagnosis", "Unknown");
+				    						}
+				    					}
+			        				}
+			        			}
+			        			if(estimateAge.getNextSibling()!=null){
+			        			if(estimateAge.getNextSibling().getNodeName().contains("value")){
+			        				Node value = estimateAge.getNextSibling();
+			        				if(value.getFirstChild()!=null){
+			        					Node low = value.getFirstChild();
+			        					if(low.hasAttributes()){
+			        						NamedNodeMap nodeMap = low.getAttributes();
+			        						for(int a = 0; a<nodeMap.getLength();a++){
+					        					Node tempNode = nodeMap.item(a);
+						    					System.out.println("Attribute low Name : "+tempNode.getNodeName()+"Attribute low Value : "+tempNode.getNodeValue());
+						    					this.setAgeRangeLow(tempNode.getNodeValue());
+			        						}
+			        					}
+			        				}
+			        				if(value.getLastChild()!=null){
+			        					Node high = value.getLastChild();
+			        					if(high.hasAttributes()){
+			        						NamedNodeMap nodeMap = high.getAttributes();
+			        						for(int a = 0; a<nodeMap.getLength();a++){
+					        					Node tempNode = nodeMap.item(a);
+						    					System.out.println("Attribute high Name : "+tempNode.getNodeName()+"Attribute high Value : "+tempNode.getNodeValue());
+						    					this.setAgeRangeHigh(tempNode.getNodeValue());
+			        						}
+			        					}
+			        				}
+			        				conditionMap.put("ageAtDiagnosis", calculateDiagnosisAge(this.getAgeRangeLow(),this.getAgeRangeHigh()));
+			        			}
 		        			}
-		        			
-		        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("codeSystemName")){
-		        				this.setSelfConditionSystemName(attributesList.item(k).getNodeValue());
-		        			}
-		        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("code")){
-		        				this.setSelfConditionCode(attributesList.item(k).getNodeValue());
-		        				conCodeList.add(this.getSelfConditionCode());
-		        				System.out.println("code "+this.getSelfConditionCode());
-		        			}
-		        			
-		        			            	
-		            	}
-    				}
+			        		}
+					}
+						conditions.add(conditionMap);
+					}
+					Iterator<Map<String, Object>> itr = conditions.iterator();
+					while(itr.hasNext()){
+						Map<String, Object> condMap = itr.next();
+						if((condMap.get("displayName")!=null)&&(condMap.get("condiiton")!=null)){
+			        		if((condMap.get("displayName").equals("FRATERNAL"))||(condMap.get("displayName").equals("IDENTICAL"))||(condMap.get("displayName").equals("adopted"))||(condMap.get("displayName").equals("height"))||(condMap.get("displayName").equals("weight"))||(condMap.get("condition").equals("Parental consanguinity indicated"))||(condMap.get("displayName").equals("Physically Active"))){
+			        			itr.remove();
+			        		}
+						}
 		        		
-	        			}
-	        		}
-					if(eElement.getElementsByTagName("low").item(0)!=null){
-						NamedNodeMap attributesList = eElement.getElementsByTagName("low").item(0).getAttributes();
-	        			for(int k=0;k<attributesList.getLength();k++){
-
-		        		System.out.println("low Attribute : " + k + ":" 
-		                        + attributesList.item(k).getNodeName() + " = "
-		                        + attributesList.item(k).getNodeValue());
-		        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("value")){
-		        				this.setAgeRangeLow(attributesList.item(k).getNodeValue());
-		        			}
-   		
-	        			}
-	        		}
-					if(eElement.getElementsByTagName("high").item(0)!=null){
-						NamedNodeMap attributesList = eElement.getElementsByTagName("high").item(0).getAttributes();
-	        			for(int k=0;k<attributesList.getLength();k++){
-
-		        		System.out.println("high Attribute : " + k + ":" 
-		                        + attributesList.item(k).getNodeName() + " = "
-		                        + attributesList.item(k).getNodeValue());
-		        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("value")){
-		        				this.setAgeRangeHigh(attributesList.item(k).getNodeValue());
-		        			}
-   		
-	        			}
-	        		}
-			        }
-			        
-			        if((this.getAgeRangeLow().equals("0"))&&(this.getAgeRangeHigh().equals("28"))){
-						this.setEstimatedAge("newborn");
-					}else if((this.getAgeRangeLow().equals("29"))&&(this.getAgeRangeHigh().equals("729"))){
-						this.setEstimatedAge("infant");
-					}else if((this.getAgeRangeLow().equals("2"))&&(this.getAgeRangeHigh().equals("10"))){
-						this.setEstimatedAge("child");
-					}else if((this.getAgeRangeLow().equals("11"))&&(this.getAgeRangeHigh().equals("19"))){
-						this.setEstimatedAge("teen");
-					}else if((this.getAgeRangeLow().equals("20"))&&(this.getAgeRangeHigh().equals("29"))){
-						this.setEstimatedAge("twenties");
-					}else if((this.getAgeRangeLow().equals("30"))&&(this.getAgeRangeHigh().equals("39"))){
-						this.setEstimatedAge("thirties");
-					}else if((this.getAgeRangeLow().equals("40"))&&(this.getAgeRangeHigh().equals("49"))){
-						this.setEstimatedAge("fourties");
-					}else if((this.getAgeRangeLow().equals("50"))&&(this.getAgeRangeHigh().equals("59"))){
-						this.setEstimatedAge("fifties");
-					}else if(this.getAgeRangeLow().equals("60")){
-						this.setEstimatedAge("sixties");
-					}else{
-						this.setEstimatedAge("unknown");
 					}
-					if(this.getEstimatedAge()!=""){
-						estimatedAge.add(this.getEstimatedAge());
-					}
-					for(int e = 0; e< estimatedAge.size();e++){
-						System.out.println("estimated age length =="+estimatedAge.get(e));
-					}
-					}
-				}catch(Exception e){
+									}catch(Exception e){
 					e.printStackTrace();
 				}
-				for(int l=0;l<conList.size();l++){
-    				if(conCodeList.get(l).equalsIgnoreCase("other")){
-    					conCodeList.add(l, "EMPTY");
-    				}
-    			}
-				for(int l=0;l<conList.size();l++){
-					System.out.println("condition codes list = "+conCodeList.get(l));
-				}
-    		
-				if((weightFound)&&(conCodeList.size()>0)){
-    				conCodeList.remove(0);
-    			}
-    			if((heightFound)&&(conCodeList.size()>0)){
-    				conCodeList.remove(0);
-    			}
-								
+									
 				expr = "/FamilyHistory/subject/patient/patientPerson/name/@formatted";
 				String fullName = xPath.compile(expr).evaluate(doc);
 				setFullName(fullName);
@@ -628,74 +622,63 @@ public class FamilyHistory implements Serializable, thing{
 				expr = "/FamilyHistory/subject/patient/patientPerson/birthTime/@value";
 				String birthDate = xPath.compile(expr).evaluate(doc);
 				setBirthDate(birthDate);
-				ethnicities = new ArrayList<String>();
-				ethnicityCodes = new ArrayList<String>();
+				ethnicities = new ArrayList<Map<String,Object>>();
+				
 				for(int e=0; e<10;e++){
+					Map<String, Object> ethnicityMap = new HashMap<String, Object>();
 				expr = "/FamilyHistory/subject/patient/patientPerson/ethnicGroupCode["+e+"]/@displayName";
 					String ethnicity = xPath.compile(expr).evaluate(doc);
-					setSelfEthnicity(ethnicity);
-					if(this.getSelfEthnicity()!=""){
-						ethnicities.add(this.getSelfEthnicity());
-					}
+					ethnicityMap.put("ethnicity", ethnicity);
 					expr = "/FamilyHistory/subject/patient/patientPerson/ethnicGroupCode["+e+"]/@code";
 					String ethCode = xPath.compile(expr).evaluate(doc);
-					if(this.getSelfEthnicityCode()!=""){
-						setSelfEthnicityCode(ethCode);
-					}
-					ethnicityCodes.add(this.getSelfEthnicityCode());
+					ethnicityMap.put("ethnicityCode", ethCode);
 					expr = "/FamilyHistory/subject/patient/patientPerson/ethnicGroupCode["+e+"]/@codeSystemName";
 					String ethname = xPath.compile(expr).evaluate(doc);
-					setSelfEthnicitySystemName(ethname);
+					ethnicityMap.put("ethnicityCodeSystemName", ethname);
+					ethnicities.add(ethnicityMap);
 				}
-				races = new ArrayList<String>();
-				raceCodes = new ArrayList<String>();
+				
+				races = new ArrayList<Map<String,Object>>();
 				for(int r = 0; r<18;r++){
+					Map<String, Object> raceMap = new HashMap<String, Object>();
 					expr = "/FamilyHistory/subject/patient/patientPerson/raceCode["+r+"]/@displayName";
 					String race = xPath.compile(expr).evaluate(doc);
-					setSelfRace(race);
-					if(this.getSelfRace()!=""){
-						races.add(this.getSelfRace());
-					}
+					raceMap.put("race", race);
 					expr = "/FamilyHistory/subject/patient/patientPerson/raceCode["+r+"]/@code";
 					String raceCode = xPath.compile(expr).evaluate(doc);
-					setSelfRaceCode(raceCode);
-					if(this.getSelfRaceCode()!=""){
-						raceCodes.add(this.getSelfRaceCode());
-					}
+					raceMap.put("raceCode", raceCode);
 					expr = "/FamilyHistory/subject/patient/patientPerson/raceCode["+r+"]/@codeSystemName";
 					String racename = xPath.compile(expr).evaluate(doc);
-					setSelfRaceCodeSystemName(racename);
+					raceMap.put("raceCodeSystemName", racename);
+					races.add(raceMap);
 				}
 				
 				expr = "/FamilyHistory/subject/patient/patientPerson/id/@extension";
 				String id = xPath.compile(expr).evaluate(doc);
 				setSelfId(id);
-				
-			//	this.setSelfCondition("Other Kidney Disease");
-			//	this.setSelfConditionCode("OTKIDDIS");
-			//	this.setSelfConditionSystemName("SNOMED_CT");
-				
-				
-				
+			
 	        	infoBuilder.append("<type-id>");
 		        infoBuilder.append(FamilyHistory.familyHistoryType);
 		        infoBuilder.append("</type-id>");
 				infoBuilder.append("<data-xml><family-history>");
-				for(int t=0;t<conList.size();t++){
-					infoBuilder.append("<condition><name><text>").append(conList.get(t)).append("</text>");
-					infoBuilder.append("<code>");
-					infoBuilder.append("<value>").append(conCodeList.get(t)).append("</value>");
-					infoBuilder.append("<family>urn:gov.familyhistory.hl7</family>");
-					infoBuilder.append("<type>").append(this.getSelfConditionSystemName()).append("</type>");
-					infoBuilder.append("<version>3</version>");
-					infoBuilder.append("</code>");
-					infoBuilder.append("<code>");
-					infoBuilder.append("<value>ageRange.").append(estimatedAge.get(t)).append("</value>");
-					infoBuilder.append("<family>hhs</family>");
-					infoBuilder.append("<type>hhs-onset-date-codes</type>");
-					infoBuilder.append("<version>3</version>");
-					infoBuilder.append("</code>");
-					infoBuilder.append("</name></condition>");
+				for(int t=0;t<conditions.size();t++){
+					Map<String, Object> condMap = conditions.get(t);
+					if(condMap.get("condition")!=null){
+						infoBuilder.append("<condition><name><text>").append(condMap.get("condition")).append("</text>");
+						infoBuilder.append("<code>");
+						infoBuilder.append("<value>").append(condMap.get("conditionCode")).append("</value>");
+						infoBuilder.append("<family>urn:gov.familyhistory.hl7</family>");
+						infoBuilder.append("<type>").append(condMap.get("conditionCodeSystemName")).append("</type>");
+						infoBuilder.append("<version>3</version>");
+						infoBuilder.append("</code>");
+						infoBuilder.append("<code>");
+						infoBuilder.append("<value>ageRange.").append(condMap.get("ageAtDiagnosis")).append("</value>");
+						infoBuilder.append("<family>hhs</family>");
+						infoBuilder.append("<type>hhs-onset-date-codes</type>");
+						infoBuilder.append("<version>3</version>");
+						infoBuilder.append("</code>");
+						infoBuilder.append("</name></condition>");
+					}
 				}
 				infoBuilder.append("<relative><relationship><text>");
 				infoBuilder.append("self");
@@ -755,7 +738,7 @@ public class FamilyHistory implements Serializable, thing{
 		        infoBuilder.append("</height>");
 		        infoBuilder.append("<weight version=\""+"1.0"+ "\">");
 		        if(this.getWeightUnit().equalsIgnoreCase("lb")){
-			        infoBuilder.append("<pounds>205</pounds>");
+			        infoBuilder.append("<pounds>"+this.getWeight()+"</pounds>");
 			        infoBuilder.append("<kilograms />");
 		        }else{
 		        	infoBuilder.append("<pounds />");
@@ -763,14 +746,20 @@ public class FamilyHistory implements Serializable, thing{
 		        }
 		        infoBuilder.append("</weight>");
 		        for(int r =0; r<races.size();r++){
-			        infoBuilder.append("<races version=\""+"1.0"+ "\">");
-			        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+races.get(r) +"\" type=\""+this.getSelfRaceCodeSystemName() +"\" value=\""+raceCodes.get(r) +"\" version=\""+"3"+"\"/>");
-			        infoBuilder.append("</races>");
+		        	Map<String, Object> race = races.get(r);
+		        	if(race.get("race")!=""){
+				        infoBuilder.append("<races version=\""+"1.0"+ "\">");
+				        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+race.get("race") +"\" type=\""+race.get("raceCodeSystemName") +"\" value=\""+race.get("raceCode") +"\" version=\""+"3"+"\"/>");
+				        infoBuilder.append("</races>");
+		        	}
 		        }
 		        for(int e =0; e<ethnicities.size();e++){
-			        infoBuilder.append("<ethnicities>");
-			        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+ethnicities.get(e) +"\" type=\""+this.getSelfEthnicitySystemName() +"\" value=\""+ethnicityCodes.get(e) +"\" version=\""+"3"+"\"/>");
-			        infoBuilder.append("</ethnicities>");
+		        	Map<String, Object> ethnicity = ethnicities.get(e);
+		        	if(ethnicity.get("ethnicity")!=""){
+				        infoBuilder.append("<ethnicities>");
+				        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+ethnicity.get("ethnicity") +"\" type=\""+ethnicity.get("ethnicityCodeSystemName") +"\" value=\""+ethnicity.get("ethnicityCode") +"\" version=\""+"3"+"\"/>");
+				        infoBuilder.append("</ethnicities>");
+		        	}
 		        }
 		        if(this.getConsanguinity().equalsIgnoreCase("true")){
 		        	infoBuilder.append("<consanguinity>true</consanguinity>");
@@ -781,14 +770,13 @@ public class FamilyHistory implements Serializable, thing{
 		        infoBuilder.append("</extension>");
 		        infoBuilder.append("<client-thing-id>"+this.getSelfId()+"</client-thing-id>");
 		        infoBuilder.append("</common></data-xml></thing>");
-//		        break;
 
 	        }
 			Node node = nodeList.item(i);
-			List<String> estimatedAgeList = new ArrayList<String>();
-			List<String> conList = new ArrayList<String>();
-    		List<String> conCodeList = new ArrayList<String>();
-			if(node.getNodeType() == Node.ELEMENT_NODE) {
+			
+			conditions = new ArrayList<Map<String,Object>>();
+    		
+    		if(node.getNodeType() == Node.ELEMENT_NODE) {
 				
 	        	Element eElement = (Element) node;
 	        	
@@ -818,54 +806,56 @@ public class FamilyHistory implements Serializable, thing{
 	        		}
 	        	}
 	        	this.setEthnicity("");
-	        	ethnicities = new ArrayList<String>();
-	        	ethnicityCodes = new ArrayList<String>();
+	        	ethnicities = new ArrayList<Map<String,Object>>();
 	        	for(int e = 0; e< 10;e++){
 		        	if(eElement.getElementsByTagName("ethnicGroupCode").item(e)!=null){
-			        	attributesList = eElement.getElementsByTagName("ethnicGroupCode").item(e).getAttributes();
-			        	for(int k=0;k<attributesList.getLength();k++){
-			        		System.out.println("Attribute: "
-			                        + attributesList.item(k).getNodeName() + " = "
-			                        + attributesList.item(k).getNodeValue());
-			        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("code"))
-			        			this.setEthnicityCode(attributesList.item(k).getNodeValue());
-			        		if(this.getEthnicityCode()!=""){
-			        			ethnicityCodes.add(this.getEthnicityCode());
-			        		}
-			        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("codeSystemName"))
-			        			this.setEthnicitySystemName(attributesList.item(k).getNodeValue());
-			        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("displayName"))
-			        			this.setEthnicity(attributesList.item(k).getNodeValue());
-			        		if(this.getEthnicity()!=""){
-			        			ethnicities.add(this.getEthnicity());
-			        		}
-			        	}
+		        		Map<String, Object> ethnicity = new HashMap<String, Object>();
+		        		Node ethnicGroupCode = eElement.getElementsByTagName("ethnicGroupCode").item(e);
+		        		if(ethnicGroupCode.hasAttributes()){
+		        			NamedNodeMap nodeMap = ethnicGroupCode.getAttributes();
+		        			for(int k = 0;k<nodeMap.getLength();k++){
+		        				Node tempNode = nodeMap.item(k);
+		    					System.out.println("Attribute ethinicity Name : "+tempNode.getNodeName()+"Attribute ethnicity Value : "+tempNode.getNodeValue());
+		    					if(tempNode.getNodeName().equalsIgnoreCase("code")){
+		    						ethnicity.put("ethnicityCode", tempNode.getNodeValue());
+		    					}
+		    					if(tempNode.getNodeName().equalsIgnoreCase("codeSystemName")){
+		    						ethnicity.put("ethnicityCodeSystemName", tempNode.getNodeValue());
+		    					}
+		    					if(tempNode.getNodeName().equalsIgnoreCase("displayName")){
+		    						ethnicity.put("ethnicity", tempNode.getNodeValue());
+		    					}
+		        			}
+		        		}
+		        		ethnicities.add(ethnicity);
 		        	}
+		        	
 	        	}
 	        	this.setRace("");
-	        	races = new ArrayList<String>();
-	        	raceCodes = new ArrayList<String>();
+	        	races = new ArrayList<Map<String,Object>>();
 	        	for(int r = 0; r < 18;r++){
 		        	if(eElement.getElementsByTagName("raceCode").item(r)!=null){
-			        	attributesList = eElement.getElementsByTagName("raceCode").item(r).getAttributes();
-			        	for(int k=0;k<attributesList.getLength();k++){
-			        		System.out.println("Attribute: "
-			                        + attributesList.item(k).getNodeName() + " = "
-			                        + attributesList.item(k).getNodeValue());
-			        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("code"))
-			        			this.setRaceCode(attributesList.item(k).getNodeValue());
-			        		if(this.getRaceCode()!=""){
-			        			raceCodes.add(this.getRaceCode());
-			        		}
-			        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("codeSystemName"))
-			        			this.setRaceCodeSystemName(attributesList.item(k).getNodeValue());
-			        		if(attributesList.item(k).getNodeName().equalsIgnoreCase("displayName"))
-			        			this.setRace(attributesList.item(k).getNodeValue());
-			        		if(this.getRace()!=""){
-			        			races.add(this.getRace());
-			        		}
-			        	}
+		        		Map<String, Object> race = new HashMap<String, Object>();
+		        		Node raceCode = eElement.getElementsByTagName("raceCode").item(r);
+		        		if(raceCode.hasAttributes()){
+		        			NamedNodeMap nodeMap = raceCode.getAttributes();
+		        			for(int k = 0;k<nodeMap.getLength();k++){
+		        				Node tempNode = nodeMap.item(k);
+		    					System.out.println("Attribute race Name : "+tempNode.getNodeName()+"Attribute race Value : "+tempNode.getNodeValue());
+		    					if(tempNode.getNodeName().equalsIgnoreCase("code")){
+		    						race.put("raceCode", tempNode.getNodeValue());
+		    					}
+		    					if(tempNode.getNodeName().equalsIgnoreCase("codeSystemName")){
+		    						race.put("raceCodeSystemName", tempNode.getNodeValue());
+		    					}
+		    					if(tempNode.getNodeName().equalsIgnoreCase("displayName")){
+		    						race.put("race", tempNode.getNodeValue());
+		    					}
+		        			}
+		        		}
+		        		races.add(race);
 		        	}
+		        	
 	        	}
 	        	this.setParentId(""); this.setRelativeId("");
 	        	if((eElement.getElementsByTagName("id").item(0)!=null)&&(eElement.getElementsByTagName("id").item(1)!=null)){
@@ -885,7 +875,7 @@ public class FamilyHistory implements Serializable, thing{
 		        		this.setRelativeId(attributesList.item(k).getNodeValue());
 		        	}
 		        	}
-	        	}else{
+	        	}else if(eElement.getElementsByTagName("id").item(0)!=null){
 	        		attributesList = eElement.getElementsByTagName("id").item(0).getAttributes();
 		        	for(int k=0;k<attributesList.getLength();k++){
 		        		System.out.println("Attribute: "
@@ -905,138 +895,259 @@ public class FamilyHistory implements Serializable, thing{
 	        	this.setCondition("");
 	        	this.setResolution("");
 	        	
-	        	
-	        	if(eElement.getElementsByTagName("clinicalObservation").item(0)!=null){
-	        		this.setCondition("");
-	        		if(eElement.getElementsByTagName("low").item(0)!=null){
-	        			attributesList = eElement.getElementsByTagName("low").item(0).getAttributes();
-	        			for(int k=0;k<attributesList.getLength();k++){
-	        				this.setEstimatedAge("");
-	        				System.out.println("Age attributes: "+ attributesList.item(k).getNodeName() + " = "
+	        	this.setBirthDate("");
+	        	if(eElement.getElementsByTagName("deceasedIndCode").item(0)!=null){
+		        	attributesList = eElement.getElementsByTagName("deceasedIndCode").item(0).getAttributes();
+		        	for(int k=0;k<attributesList.getLength();k++){
+		        		System.out.println("Attribute: "
+		                        + attributesList.item(k).getNodeName() + " = "
+		                        + attributesList.item(k).getNodeValue());
+		        		if(attributesList.item(k).getNodeValue().contains("UNKNOWN")){
+		        			this.setBirthDate("Unknown");
+		        		}
+		        	}
+	        	}
+	        	if(node.getLastChild().getLastChild().getNodeName().contains("dataEstimatedAge")){
+	        		Node dobEstimated = node.getLastChild().getLastChild();
+	        		System.out.println("DOB nodes "+dobEstimated.getFirstChild().getNodeName());
+	        		
+	        		if(dobEstimated.getFirstChild().getNodeName().equalsIgnoreCase("code")){
+		        		attributesList = dobEstimated.getFirstChild().getAttributes();
+		        		for(int k=0;k<attributesList.getLength();k++){
+	        				System.out.println("DOB code attributes: "+ attributesList.item(k).getNodeName() + " = "
 			                        + attributesList.item(k).getNodeValue());
-	        				if(attributesList.item(k).getNodeName().equalsIgnoreCase("value")){
-		        				this.setEstimatedAge(attributesList.item(k).getNodeValue());
+	        				if(attributesList.item(k).getNodeName().equalsIgnoreCase("originalText")){
+	        					this.setBirthDate("");
+		        				if(attributesList.item(k).getNodeValue().equalsIgnoreCase("pre-birth")){
+		        					this.setBirthDate("ageRange.prebirth");
+		        				}
+		        				if(attributesList.item(k).getNodeValue().equalsIgnoreCase("unknown")){
+		        					this.setBirthDate("ageRange.Unknown");
+		        				}
 		        			}
 	        			}
-	        		}
-//	        		List<String> conList = new ArrayList<String>();
-//	        		List<String> conCodeList = new ArrayList<String>();
-	        		twinStatus = ""; adopted = false;
-	        		if(eElement.getElementsByTagName("code").item(0)!=null){
-	        			attributesList = eElement.getElementsByTagName("code").item(0).getAttributes();
-	        			for(int k=0;k<attributesList.getLength();k++){
-	        				System.out.println(" twin condition Attribute: " + k + ":" 
-			                        + attributesList.item(k).getNodeName() + " = "
-			                        + attributesList.item(k).getNodeValue());
-	        				if(attributesList.item(k).getNodeValue().contains("Fraternal twin")){
+		        	}
+	        		this.setDobAgeLow(""); this.setDobAgeHigh("");
+	        		if((dobEstimated.getFirstChild().getNextSibling()!=null)&&(dobEstimated.getFirstChild().getNextSibling().getNodeName().contains("value"))){
+		        		Node value = dobEstimated.getFirstChild().getNextSibling();
+		        		if(value.getFirstChild()!=null){
+		        			Node low = value.getFirstChild();
+        					if(low.hasAttributes()){
+        						NamedNodeMap nodeMap = low.getAttributes();
+        						for(int a = 0; a<nodeMap.getLength();a++){
+		        					Node tempNode = nodeMap.item(a);
+			    					System.out.println("Attribute DOB low Name : "+tempNode.getNodeName()+"Attribute low Value : "+tempNode.getNodeValue());
+			    					this.setDobAgeLow(tempNode.getNodeValue());
+        						}
+        					}
+		        		}
+		        		if(value.getLastChild()!=null){
+        					Node high = value.getLastChild();
+        					if(high.hasAttributes()){
+        						NamedNodeMap nodeMap = high.getAttributes();
+        						for(int a = 0; a<nodeMap.getLength();a++){
+		        					Node tempNode = nodeMap.item(a);
+			    					System.out.println("Attribute DOB high Name : "+tempNode.getNodeName()+"Attribute high Value : "+tempNode.getNodeValue());
+			    					this.setDobAgeHigh(tempNode.getNodeValue());
+        						}
+        					}
+        				}
+		        	}
+		        	if((this.getDobAgeLow().equals("0"))&&(this.getDobAgeHigh().equals("28"))){
+						this.setBirthDate("ageRange.newborn");
+					}else if((this.getDobAgeLow().equals("29"))&&(this.getDobAgeHigh().equals("729"))){
+						this.setBirthDate("ageRange.infant");
+					}else if((this.getDobAgeLow().equals("2"))&&(this.getDobAgeHigh().equals("10"))){
+						this.setBirthDate("ageRange.child");
+					}else if((this.getDobAgeLow().equals("11"))&&(this.getDobAgeHigh().equals("19"))){
+						this.setBirthDate("ageRange.teen");
+					}else if((this.getDobAgeLow().equals("20"))&&(this.getDobAgeHigh().equals("29"))){
+						this.setBirthDate("ageRange.twenties");
+					}else if((this.getDobAgeLow().equals("30"))&&(this.getDobAgeHigh().equals("39"))){
+						this.setBirthDate("ageRange.thirties");
+					}else if((this.getDobAgeLow().equals("40"))&&(this.getDobAgeHigh().equals("49"))){
+						this.setBirthDate("ageRange.fourties");
+					}else if((this.getDobAgeLow().equals("50"))&&(this.getDobAgeHigh().equals("59"))){
+						this.setBirthDate("ageRange.fifties");
+					}else if(this.getDobAgeLow().equals("60")){
+						this.setBirthDate("ageRange.sixties");
+					}else{
+						this.setBirthDate("ageRange.Unknown");
+					}
+	        	}
+	        	
+	        	
+	        	this.setCondition("");
+        		twinStatus = ""; adopted = false;
+        		for(int c = 0;c < 50; c++){
+	        	if(eElement.getElementsByTagName("clinicalObservation").item(c)!=null){
+	        		Map<String, Object> conditionMap = new HashMap<String, Object>();
+	        		Node clinicalObservation = eElement.getElementsByTagName("clinicalObservation").item(c);
+	        		Node condition = clinicalObservation.getFirstChild();
+	        		if(condition.hasAttributes()){
+	        			NamedNodeMap nodeMap = condition.getAttributes();
+	        			for(int n = 0; n<nodeMap.getLength();n++){
+	        				Node tempNode = nodeMap.item(n);
+	    					System.out.println("Attribute Name : "+tempNode.getNodeName()+"Attribute Value : "+tempNode.getNodeValue());
+	    					if((tempNode.getNodeValue().contains("Fraternal twin"))&&(tempNode.getNodeName().equalsIgnoreCase("displayName"))){
 	        					this.setTwinStatus("FRATERNAL");
-	        				}
-	        				if(attributesList.item(k).getNodeValue().contains("Identical twin")){
+	        					conditionMap.put("condition", "FRATERNAL");
+	        				}else if((tempNode.getNodeValue().contains("Identical twin"))&&(tempNode.getNodeName().equalsIgnoreCase("displayName"))){
 	        					this.setTwinStatus("IDENTICAL");
-	        				}
-	        				if(attributesList.item(k).getNodeValue().contains("adopted")){
+	        					conditionMap.put("condition", "IDENTICAL");
+	        				}else if((tempNode.getNodeValue().contains("adopted"))&&(tempNode.getNodeName().equalsIgnoreCase("displayName"))){
 	        					this.setAdopted(true);
-	        				}
-	        			}
-	        		}
-	        		
-	        		for(int d = 0;d<25;d++){
-	        			this.setEstimatedAge("");
-			        		if(eElement.getElementsByTagName("code").item(d)!=null){
-			        			for(int k=0;k<attributesList.getLength();k++){
-				        		attributesList = eElement.getElementsByTagName("code").item(d).getAttributes();
-				        		System.out.println("condition Attribute: " + k + ":" 
-				                        + attributesList.item(k).getNodeName() + " = "
-				                        + attributesList.item(k).getNodeValue());
-				        		if(attributesList.item(k).getNodeValue().contains("Fraternal twin")){
-		        					this.setTwinStatus("FRATERNAL");
-		        				}else if(attributesList.item(k).getNodeValue().contains("Identical twin")){
-		        					this.setTwinStatus("IDENTICAL");
-		        				}else if(attributesList.item(k).getNodeValue().contains("adopted")){
-		        					this.setAdopted(true);
-		        				}else{
-		        					if(attributesList.item(k).getNodeValue().equalsIgnoreCase("death")){
-			        					this.setResolution("death");
-			        				}
-//				        		if(!(attributesList.item(k).getNodeValue().equalsIgnoreCase("Age at Death"))){
-				        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("originalText")){
-				        				if(attributesList.item(k).getNodeValue().equalsIgnoreCase("pre-birth")){
-				        					this.setEstimatedAge("prebirth");
-				        					System.out.println("prebirth=="+this.getEstimatedAge());
-				        					estimatedAgeList.add(this.getEstimatedAge());
-				        				}else{
-					        				this.setCondition(attributesList.item(k).getNodeValue());
-					        				if(this.getCondition()!=""){
-					        					conList.add(this.getCondition());
-					        				}
-				        				}
-				        			}
-				        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("codeSystemName")){
-				        				this.setConditionCodeSystemName(attributesList.item(k).getNodeValue());
-				        				this.setConditionCodeSystemName(attributesList.item(k).getNodeValue());
-				        			}
-				        			if(attributesList.item(k).getNodeName().equalsIgnoreCase("code")){
-				        				
-					        				this.setConditionCode(attributesList.item(k).getNodeValue());
-					        				this.setDeathConditionCode(attributesList.item(k).getNodeValue());
-					        				if(this.getConditionCode()!=""){
-					        					conCodeList.add(this.getConditionCode());
-					        				
-				        				}
+	        					conditionMap.put("condition", "adopted");
+	        				}else{
+	        					
+	        					if(tempNode.getNodeName().contains("originalText")){
+	        						this.setCondition(tempNode.getNodeValue());
+				        			if(this.getCondition()!=""){
+				        				conditionMap.put("condition",tempNode.getNodeValue());
 				        			}
 			        			}
+	        					if(tempNode.getNodeName().equalsIgnoreCase("codeSystemName")){
+			        				this.setConditionCodeSystemName(tempNode.getNodeValue());
+			        				conditionMap.put("conditionCodeSystem", tempNode.getNodeValue());
+			        			}
+			        			if(tempNode.getNodeName().equalsIgnoreCase("code")){
+			        					this.setConditionCode(tempNode.getNodeValue());
+				        				if(this.getConditionCode().equalsIgnoreCase("OTHER")){
+				        					conditionMap.put("conditionCode", "EMPTY");
+				        				}else{
+				        					conditionMap.put("conditionCode", tempNode.getNodeValue());
+				        				}
+				        			}
+	        				  }
+	        			}
+	        			if(condition.getNextSibling()!=null){
+		        			if(condition.getNextSibling().getNodeName().contains("subject")){
+			        			Node subject = condition.getNextSibling();
+			        			Node dataEstimatedAge = subject.getFirstChild();
+			        			Node estimatedAge = dataEstimatedAge.getFirstChild();
+			        			if(estimatedAge.hasAttributes()){
+			        				nodeMap = estimatedAge.getAttributes();
+			        				for(int a = 0; a<nodeMap.getLength();a++){
+			        					Node tempNode = nodeMap.item(a);
+				    					System.out.println("Attribute Name : "+tempNode.getNodeName()+"Attribute Value : "+tempNode.getNodeValue());
+				    					if(tempNode.getNodeName().equalsIgnoreCase("originalText")){
+				    						if(tempNode.getNodeValue().equalsIgnoreCase("pre-birth")){
+				    							conditionMap.put("ageAtDiagnosis", "prebirth");
+				    						}else if(tempNode.getNodeValue().equalsIgnoreCase("unknown")){
+				    							conditionMap.put("ageAtDiagnosis", "Unknown");
+				    						}
+				    					}
+			        				}
+			        			}
+			        			if(estimatedAge.getNextSibling()!=null){
+			        			if(estimatedAge.getNextSibling().getNodeName().contains("value")){
+			        				Node value = estimatedAge.getNextSibling();
+			        				if(value.getFirstChild()!=null){
+			        					Node low = value.getFirstChild();
+			        					if(low.hasAttributes()){
+			        						nodeMap = low.getAttributes();
+			        						for(int a = 0; a<nodeMap.getLength();a++){
+					        					Node tempNode = nodeMap.item(a);
+						    					System.out.println("Attribute low Name : "+tempNode.getNodeName()+"Attribute low Value : "+tempNode.getNodeValue());
+						    					this.setAgeRangeLow(tempNode.getNodeValue());
+			        						}
+			        					}
+			        				}
+			        				if(value.getLastChild()!=null){
+			        					Node high = value.getLastChild();
+			        					if(high.hasAttributes()){
+			        						nodeMap = high.getAttributes();
+			        						for(int a = 0; a<nodeMap.getLength();a++){
+					        					Node tempNode = nodeMap.item(a);
+						    					System.out.println("Attribute high Name : "+tempNode.getNodeName()+"Attribute high Value : "+tempNode.getNodeValue());
+						    					this.setAgeRangeHigh(tempNode.getNodeValue());
+			        						}
+			        					}
+			        				}
+			        				conditionMap.put("ageAtDiagnosis", calculateDiagnosisAge(this.getAgeRangeLow(),this.getAgeRangeHigh()));
+			        			}
+		        			}
+			        		}else if(condition.getNextSibling().getNodeName().contains("sourceOf")){
+			        			//Remove the condition from the conditions list if the condition has a code
+			        			String conditionCode = conditionMap.get("conditionCode").toString();
+			        			if(conditionCode.matches("^[0-9]*$")){
+			        				conditions.remove(conditions.remove(conditions.size()-1));
+			        			}
+			        			Node sourceOf = condition.getNextSibling();
+			        			Node death = sourceOf.getFirstChild();
+			        			if(death.hasAttributes()){
+			        				nodeMap = death.getAttributes();
+			        				for(int a = 0; a<nodeMap.getLength();a++){
+			        					Node tempNode = nodeMap.item(a);
+				    					System.out.println("Attribute Name : "+tempNode.getNodeName()+"Attribute Value : "+tempNode.getNodeValue());
+				    					if(tempNode.getNodeValue().equalsIgnoreCase("death")){
+				    						this.setResolution("death");
+				    						conditionMap.put("resolution", "death");
+				    					}
+			        				}
+			        			}
+			        			if(eElement.getElementsByTagName("deceasedEstimatedAge").item(0)!=null){
+			        				Node deceasedEstimatedAge = eElement.getElementsByTagName("deceasedEstimatedAge").item(0);
+			        				Node deathAge = deceasedEstimatedAge.getFirstChild();
+			        				if(deathAge.hasAttributes()){
+				        				nodeMap = deathAge.getAttributes();
+				        				for(int a = 0; a<nodeMap.getLength();a++){
+				        					Node tempNode = nodeMap.item(a);
+					    					System.out.println("Attribute Name : "+tempNode.getNodeName()+"Attribute Value : "+tempNode.getNodeValue());
+					    					if(tempNode.getNodeName().equalsIgnoreCase("originalText")){
+					    						if(tempNode.getNodeValue().equalsIgnoreCase("pre-birth")){
+					    							conditionMap.put("ageAtDiagnosis", "prebirth");
+					    						}else if(tempNode.getNodeValue().equalsIgnoreCase("unknown")){
+					    							conditionMap.put("ageAtDiagnosis", "Unknown");
+					    						}
+					    					}
+				        				}
+				        			}
+			        				if(deathAge.getNextSibling()!=null){
+				        				if(deathAge.getNextSibling().getNodeName().contains("value")){
+					        				Node value = deathAge.getNextSibling();
+					        				if(value.getFirstChild()!=null){
+					        					Node low = value.getFirstChild();
+					        					if(low.hasAttributes()){
+					        						nodeMap = low.getAttributes();
+					        						for(int a = 0; a<nodeMap.getLength();a++){
+							        					Node tempNode = nodeMap.item(a);
+								    					System.out.println("Attribute low Name : "+tempNode.getNodeName()+"Attribute low Value : "+tempNode.getNodeValue());
+								    					this.setAgeRangeLow(tempNode.getNodeValue());
+					        						}
+					        					}
+					        				}
+					        				if(value.getLastChild()!=null){
+					        					Node high = value.getLastChild();
+					        					if(high.hasAttributes()){
+					        						nodeMap = high.getAttributes();
+					        						for(int a = 0; a<nodeMap.getLength();a++){
+							        					Node tempNode = nodeMap.item(a);
+								    					System.out.println("Attribute high Name : "+tempNode.getNodeName()+"Attribute high Value : "+tempNode.getNodeValue());
+								    					this.setAgeRangeHigh(tempNode.getNodeValue());
+					        						}
+					        					}
+					        				}
+					        				conditionMap.put("ageAtDiagnosis", calculateDiagnosisAge(this.getAgeRangeLow(),this.getAgeRangeHigh()));
+					        			}
+			        				}
 			        			}
 			        		}
-	        		}
-	        		if(eElement.getElementsByTagName("low").item(0)!=null){
-	        			attributesList = eElement.getElementsByTagName("low").item(0).getAttributes();
-	        			for(int k=0;k<attributesList.getLength();k++){
-	        				System.out.println("low relative attributes: "+ attributesList.item(k).getNodeName() + " = "
-			                        + attributesList.item(k).getNodeValue());
-	        				this.setAgeRangeLow(attributesList.item(k).getNodeValue());
 	        			}
 	        		}
-	        		if(eElement.getElementsByTagName("high").item(0)!=null){
-	        			attributesList = eElement.getElementsByTagName("high").item(0).getAttributes();
-	        			for(int k=0;k<attributesList.getLength();k++){
-	        				System.out.println("high relative attributes: "+ attributesList.item(k).getNodeName() + " = "
-			                        + attributesList.item(k).getNodeValue());
-	        				this.setAgeRangeHigh(attributesList.item(k).getNodeValue());
-	        			}
-	        		}
-	        		
-	        		 if((this.getAgeRangeLow().equals("0"))&&(this.getAgeRangeHigh().equals("28"))){
-							this.setEstimatedAge("newborn");
-						}else if((this.getAgeRangeLow().equals("29"))&&(this.getAgeRangeHigh().equals("729"))){
-							this.setEstimatedAge("infant");
-						}else if((this.getAgeRangeLow().equals("2"))&&(this.getAgeRangeHigh().equals("10"))){
-							this.setEstimatedAge("child");
-						}else if((this.getAgeRangeLow().equals("11"))&&(this.getAgeRangeHigh().equals("19"))){
-							this.setEstimatedAge("teen");
-						}else if((this.getAgeRangeLow().equals("20"))&&(this.getAgeRangeHigh().equals("29"))){
-							this.setEstimatedAge("twenties");
-						}else if((this.getAgeRangeLow().equals("30"))&&(this.getAgeRangeHigh().equals("39"))){
-							this.setEstimatedAge("thirties");
-						}else if((this.getAgeRangeLow().equals("40"))&&(this.getAgeRangeHigh().equals("49"))){
-							this.setEstimatedAge("fourties");
-						}else if((this.getAgeRangeLow().equals("50"))&&(this.getAgeRangeHigh().equals("59"))){
-							this.setEstimatedAge("fifties");
-						}else if(this.getAgeRangeLow().equals("60")){
-							this.setEstimatedAge("sixties");
-						}else{
-							this.setEstimatedAge("unknown");
-						}
-					if(this.getEstimatedAge()!=""){
-						estimatedAgeList.add(this.getEstimatedAge());
-					}
-							
+					conditions.add(conditionMap);
 	        	}
-	        	for(int e = 0; e< estimatedAgeList.size();e++){
-					System.out.println("estimated ages =="+estimatedAgeList.get(e));
-				}
-	        	this.setBirthDate("");
+    		}
+	        	for(int d = 0; d< conditions.size();d++){
+	        		Map<String, Object> condMap = conditions.get(d);
+	        		if((condMap.get("condition").equals("FRATERNAL"))||(condMap.get("condition").equals("IDENTICAL"))||(condMap.get("condition").equals("adopted"))){
+	        			conditions.remove(d);
+	        		}
+	        	}
+	        	
+	        	       	
 	        	if(eElement.getElementsByTagName("birthTime").item(0)!=null){
-	        		
+	        		this.setBirthDate("");
 	        	attributesList = eElement.getElementsByTagName("birthTime").item(0).getAttributes();
 	        	for(int k=0;k<attributesList.getLength();k++){
 	        		System.out.println("Attribute: "
@@ -1045,6 +1156,7 @@ public class FamilyHistory implements Serializable, thing{
 	        		this.setBirthDate(attributesList.item(k).getNodeValue());
 	        	}
 	        	}
+
 			}
 			 infoBuilder.append("<thing>");
 			 this.setId("");this.setVersionStamp("");
@@ -1059,51 +1171,28 @@ public class FamilyHistory implements Serializable, thing{
 	        infoBuilder.append(FamilyHistory.familyHistoryType);
 	        infoBuilder.append("</type-id>");
 			infoBuilder.append("<data-xml><family-history>");
-			for(int d = 0;d < conList.size();d++){
-				infoBuilder.append("<condition><name><text>").append(conList.get(d)).append("</text>");
+			for(int d = 0;d < conditions.size();d++){
+				Map<String, Object> condMap = conditions.get(d);
+				infoBuilder.append("<condition><name><text>").append(condMap.get("condition")).append("</text>");
 				infoBuilder.append("<code>");
-				infoBuilder.append("<value>").append(conCodeList.get(d)).append("</value>");
+				infoBuilder.append("<value>").append(condMap.get("conditionCode")).append("</value>");
 				infoBuilder.append("<family>urn:gov.familyhistory.hl7</family>");
-				infoBuilder.append("<type>").append(this.getConditionCodeSystemName()).append("</type>");
+				infoBuilder.append("<type>").append(condMap.get("conditionCodeSystem")).append("</type>");
 				infoBuilder.append("<version>3</version>");
 				infoBuilder.append("</code>");
 				infoBuilder.append("<code>");
-				if(estimatedAgeList.size()>0){
-					infoBuilder.append("<value>ageRange.").append(estimatedAgeList.get(0)).append("</value>");
-				}else{
-					infoBuilder.append("<value>ageRange.unknown</value>");
-				}
+				infoBuilder.append("<value>ageRange.").append(condMap.get("ageAtDiagnosis")).append("</value>");
 				infoBuilder.append("<family>hhs</family>");
 				infoBuilder.append("<type>hhs-onset-date-codes</type>");
 				infoBuilder.append("<version>3</version>");
 				infoBuilder.append("</code>");
 				infoBuilder.append("</name>");
-				if(this.getResolution()!=""){
+				if(condMap.containsKey("resolution")&&(condMap.get("resolution").equals("death"))){
 					infoBuilder.append("<resolution>death</resolution>");
 				}
 				infoBuilder.append("</condition>");
 			}
-//			if(this.getResolution()!=""){
-//				infoBuilder.append("<condition><name><text>").append(getDeathCondition()).append("</text>");
-//				infoBuilder.append("<code>");
-//				infoBuilder.append("<value>").append(this.getDeathConditionCode()).append("</value>");
-//				infoBuilder.append("<family>urn:gov.familyhistory.hl7</family>");
-//				infoBuilder.append("<type>").append(this.getDeathConditionSystemName()).append("</type>");
-//				infoBuilder.append("<version>3</version>");
-//				infoBuilder.append("</code>");
-//				infoBuilder.append("<code>");
-//				if(estimatedAgeList.size()>0){
-//					infoBuilder.append("<value>ageRange.").append(estimatedAgeList.get(0)).append("</value>");
-//				}else{
-//					infoBuilder.append("<value>ageRange.unknown</value>");
-//				}
-//				infoBuilder.append("<family>hhs</family>");
-//				infoBuilder.append("<type>hhs-onset-date-codes</type>");
-//				infoBuilder.append("<version>3</version>");
-//				infoBuilder.append("</code>");
-//				infoBuilder.append("</name><resolution>death</resolution></condition>");
-//				
-//			}
+
 			infoBuilder.append("<relative><relationship><text>");
 			infoBuilder.append(this.getRelation());
 	        infoBuilder.append("</text><code>");
@@ -1121,17 +1210,9 @@ public class FamilyHistory implements Serializable, thing{
 	        infoBuilder.append("<phone><description /><is-primary>false</is-primary><number /></phone>");
 	        infoBuilder.append("<email><description /><is-primary>false</is-primary><address /></email></contact>");
 	        infoBuilder.append("<type><text /><code><value /><family /><type /><version /></code></type></relative-name>");
-	        if(this.getBirthDate()!=""){
-		        infoBuilder.append("<date-of-birth>");
-		        infoBuilder.append("<y>").append(getBirthYear()).append("</y>");
-		        infoBuilder.append("<m>").append(getBirthMonth()).append("</m>");
-		        infoBuilder.append("<d>").append(getBirthDay()).append("</d>");
-		        infoBuilder.append("</date-of-birth>");
-	        }
 
 	        infoBuilder.append("<region-of-origin><text /><code><value /><family /><type /><version /></code></region-of-origin >");
 	        infoBuilder.append("</relative></family-history>");
-	 //       infoBuilder.append("<common /></data-xml></thing>");
 	        infoBuilder.append("<common>");
 	        infoBuilder.append("<source>urn:gov.hhs.familyhistory.mfhp</source>");
 	        infoBuilder.append("<extension source=\""+"urn:gov.hhs.familyhistory.mfhp"+ "\">");
@@ -1152,14 +1233,30 @@ public class FamilyHistory implements Serializable, thing{
 	        	infoBuilder.append("<adopted>false</adopted>");
 	        }
 	        for(int r=0;r<races.size();r++){
+	        	Map<String, Object> race = races.get(r);
 		        infoBuilder.append("<races version=\""+"1.0"+ "\">");
-		        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+races.get(r) +"\" type=\""+this.getRaceCodeSystemName() +"\" value=\""+raceCodes.get(r) +"\" version=\""+"3"+"\"/>");
+		        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+race.get("race") +"\" type=\""+race.get("raceCodeSystemName") +"\" value=\""+race.get("raceCode") +"\" version=\""+"3"+"\"/>");
 		        infoBuilder.append("</races>");
 	        }
 	        for(int e=0;e<ethnicities.size();e++){
+	        	Map<String, Object> ethnicity = ethnicities.get(e);
 		        infoBuilder.append("<ethnicities>");
-		        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+ethnicities.get(e) +"\" type=\""+this.getEthnicitySystemName() +"\" value=\""+ethnicityCodes.get(e) +"\" version=\""+"3"+"\"/>");
+		        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+ethnicity.get("ethnicity") +"\" type=\""+ethnicity.get("ethnicityCodeSystemName") +"\" value=\""+ethnicity.get("ethnicityCode") +"\" version=\""+"3"+"\"/>");
 		        infoBuilder.append("</ethnicities>");
+	        }
+	        if(this.getBirthDate()!=""){
+	        	infoBuilder.append("<dateOfBirth version=\""+"1.0"+ "\">");
+	        	infoBuilder.append("<code>");
+	        	infoBuilder.append("<value>"+this.getBirthDate()+"</value>");
+        		infoBuilder.append("<family>hhs</family>");
+	        	if(this.getBirthDate().contains("/")){
+	        		infoBuilder.append("<type>hhs-date-based-exact-age</type>");
+	        	}else{
+	        		infoBuilder.append("<type>hhs-year-based-age</type>");
+	        	}
+	        	infoBuilder.append("<version>3</version>");
+	        	infoBuilder.append("</code>");
+	        	infoBuilder.append("</dateOfBirth>");
 	        }
 	        infoBuilder.append("<consanguinity>false</consanguinity>");
 	        infoBuilder.append("</fhh-extensions>");
@@ -1170,13 +1267,13 @@ public class FamilyHistory implements Serializable, thing{
 		        infoBuilder.append("<relationship-type>PAR</relationship-type>");
 		        infoBuilder.append("</related-thing>");
 	        }
-	        infoBuilder.append("<client-thing-id>"+this.getRelativeId()+"</client-thing-id>");
+	        if(this.getRelativeId()!=""){
+	        	infoBuilder.append("<client-thing-id>"+this.getRelativeId()+"</client-thing-id>");
+	        }
 	        infoBuilder.append("</common></data-xml></thing>");
 
 		}
-//		infoBuilder.append("</itemtype></itemtypes>");
         infoBuilder.append("</info>");
- //       infoBuilder.append("</itemtype></itemtypes>");
         
         System.out.println(infoBuilder.toString());
         Authentication auth = new Authentication();
@@ -1190,27 +1287,50 @@ public class FamilyHistory implements Serializable, thing{
 		template.makeRequest(request, personInfo);
 	    
 	   	} catch (XPathExpressionException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
 	
 			
 	}
+	
+	private String calculateDiagnosisAge(String ageRangeLow2,
+			String ageRangeHigh2) {
+		this.setEstimatedAge("");
+		if((this.getAgeRangeLow().equals("0"))&&(this.getAgeRangeHigh().equals("28"))){
+			this.setEstimatedAge("newborn");
+		}else if((this.getAgeRangeLow().equals("29"))&&(this.getAgeRangeHigh().equals("729"))){
+			this.setEstimatedAge("infant");
+		}else if((this.getAgeRangeLow().equals("2"))&&(this.getAgeRangeHigh().equals("10"))){
+			this.setEstimatedAge("child");
+		}else if((this.getAgeRangeLow().equals("11"))&&(this.getAgeRangeHigh().equals("19"))){
+			this.setEstimatedAge("teen");
+		}else if((this.getAgeRangeLow().equals("20"))&&(this.getAgeRangeHigh().equals("29"))){
+			this.setEstimatedAge("twenties");
+		}else if((this.getAgeRangeLow().equals("30"))&&(this.getAgeRangeHigh().equals("39"))){
+			this.setEstimatedAge("thirties");
+		}else if((this.getAgeRangeLow().equals("40"))&&(this.getAgeRangeHigh().equals("49"))){
+			this.setEstimatedAge("fourties");
+		}else if((this.getAgeRangeLow().equals("50"))&&(this.getAgeRangeHigh().equals("59"))){
+			this.setEstimatedAge("fifties");
+		}else if(this.getAgeRangeLow().equals("60")){
+			this.setEstimatedAge("sixties");
+		}else{
+			this.setEstimatedAge("unknown");
+		}
+		return this.getEstimatedAge();
+		
+	}
 	private void checkFamilyHistoryExists(String authToken) {
-		// TODO Auto-generated method stub
-//		System.out.println("Checking if family history exists");
+		
 		StringBuilder infoBuilder = new StringBuilder();
 		if(id != null && !id.equals("")) {
 			infoBuilder.append("<info>");
-	        if(id != null && !id.equals("")) {
-	        	System.out.println("There is family history");
-	        	infoBuilder.append("<thing-id version-stamp=\"");
-	        	infoBuilder.append(versionStamp + "\">");
-	        	infoBuilder.append(id);
-	        	infoBuilder.append("</thing-id>");
-	        }
-	        
+	        System.out.println("There is family history");
+	        infoBuilder.append("<thing-id version-stamp=\"");
+	        infoBuilder.append(versionStamp + "\">");
+	        infoBuilder.append(id);
+	        infoBuilder.append("</thing-id>");
 	        infoBuilder.append("</info>");
 	        System.out.println(infoBuilder.toString());
 	        Authentication auth = new Authentication();
@@ -1223,98 +1343,9 @@ public class FamilyHistory implements Serializable, thing{
 			RequestTemplate template = new RequestTemplate(ConnectionFactory.getConnection());
 			template.makeRequest(request, personInfo);
 		}
-//		System.out.println("FamilyHistory removed successfully");
 		
 	}
-	private void setupFamilyHistory(String xmlData) {
-		Document doc = XmlDocument.parse(xmlData);
-		try {
-		XPath xPath =  XPathFactory.newInstance().newXPath();
-		String expr = "/FamilyHistory/subject/patient/patientPerson/relative";
-		NodeList nodeList = (NodeList) xPath.compile(expr).evaluate(doc, XPathConstants.NODESET);
-		System.out.println("nodeList length =="+nodeList.getLength());
-		for (int i = 0;null!=nodeList && i < nodeList.getLength(); i++) {
-			Node node = nodeList.item(i);
-			if(node.getNodeType() == Node.ELEMENT_NODE) {
-	        	Element eElement = (Element) node;
-	        	
-	        	NamedNodeMap attributesList = eElement.getElementsByTagName("code").item(0).getAttributes();
-	        	for(int j=0;j<attributesList.getLength();j++){
-	        		System.out.println("Attribute: "
-	                        + attributesList.item(j).getNodeName() + " = "
-	                        + attributesList.item(j).getNodeValue());
-	        		this.setRelation(attributesList.item(j).getNodeValue());
-	        	}
-	        	
-	        	attributesList = eElement.getElementsByTagName("administrativeGenderCode").item(0).getAttributes();
-	        	for(int k=0;k<attributesList.getLength();k++){
-	        		System.out.println("Attribute: "
-	                        + attributesList.item(k).getNodeName() + " = "
-	                        + attributesList.item(k).getNodeValue());
-	        		if(attributesList.item(k).getNodeValue().equalsIgnoreCase("male")){
-	        			this.setGender("Mr");
-	        		}else{
-	        			this.setGender("Mrs");
-	        		}
-	        	}
-	        	attributesList = eElement.getElementsByTagName("ethnicGroupCode").item(0).getAttributes();
-	        	for(int k=0;k<attributesList.getLength();k++){
-	        		System.out.println("Attribute: "
-	                        + attributesList.item(k).getNodeName() + " = "
-	                        + attributesList.item(k).getNodeValue());
-	        	}
-	        	attributesList = eElement.getElementsByTagName("raceCode").item(0).getAttributes();
-	        	for(int k=0;k<attributesList.getLength();k++){
-	        		System.out.println("Attribute: "
-	                        + attributesList.item(k).getNodeName() + " = "
-	                        + attributesList.item(k).getNodeValue());
-	        	}
-	        	attributesList = eElement.getElementsByTagName("id").item(0).getAttributes();
-	        	for(int k=0;k<attributesList.getLength();k++){
-	        		System.out.println("Attribute: "
-	                        + attributesList.item(k).getNodeName() + " = "
-	                        + attributesList.item(k).getNodeValue());
-	        	}
-	        	attributesList = eElement.getElementsByTagName("name").item(0).getAttributes();
-	        	for(int k=0;k<attributesList.getLength();k++){
-	        		System.out.println("Attribute: "
-	                        + attributesList.item(k).getNodeName() + " = "
-	                        + attributesList.item(k).getNodeValue());
-	        	}
-	        	if(eElement.getElementsByTagName("birthTime").item(0)!=null){
-	        	attributesList = eElement.getElementsByTagName("birthTime").item(0).getAttributes();
-	        	for(int k=0;k<attributesList.getLength();k++){
-	        		System.out.println("Attribute: "
-	                        + attributesList.item(k).getNodeName() + " = "
-	                        + attributesList.item(k).getNodeValue());
-	        	}
-	        	}
-			}
-	        
-			
-		
-        
-//        Authentication auth = new Authentication();
-//		PersonInfo personInfo = auth.getPersonInfo(authToken);
-//        
-//        Request request = new Request();
-//		request.setMethodName("PutThings");
-//		request.setInfo(infoBuilder.toString());
-//		
-//		RequestTemplate template = new RequestTemplate(ConnectionFactory.getConnection());
-//		template.makeRequest(request, personInfo);
-		
-	     }
-	
-		
-		setRelation(relation);
-		} catch (XPathExpressionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		
-	}
+
 	private void getPersonalInfo(String authToken)
 	{
 		Request request = new Request();
@@ -1344,7 +1375,6 @@ public class FamilyHistory implements Serializable, thing{
     	            setVersionStamp(xpath.evaluate("thing-id/@version-stamp", thing));
     	            System.out.println(id);
     	            System.out.println(versionStamp);
-    	            System.out.println("(((()))))))))))))))))");
 	            	break;
     	        }
 				return id;
@@ -1356,17 +1386,6 @@ public class FamilyHistory implements Serializable, thing{
 		getPersonalInfo(authToken);
 		writeFamilyHistory(authToken, dataBean);
 		
-	}
-	public void conditionSetup(String xmlData){
-		Document doc = XmlDocument.parse(xmlData);
-		try {
-		XPath xPath =  XPathFactory.newInstance().newXPath();
-		String expr = "/FamilyHistory/subject/patient/patientPerson/relative/relationshipHolder/subjectof2/clinicalObservation/code/@displayName";
-    	String condition = xPath.compile(expr).evaluate(doc);
-    	System.out.println("conditio +"+condition);
-		}catch(Exception e){
-			e.printStackTrace();
-		}
 	}
 	
 

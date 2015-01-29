@@ -58,7 +58,6 @@ public class PersonalDemographicInfo implements Serializable, thing
 	public String getFirstName() {
 		if( firstName == null || firstName.equals("")) {
 			int space = getFullName().indexOf(" ");
-			System.out.println("space =="+space);
 			if(space>-1){
 				this.firstName = getFullName().substring(0,space);
 			}

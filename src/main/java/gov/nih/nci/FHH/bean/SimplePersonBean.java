@@ -1,6 +1,7 @@
 package gov.nih.nci.FHH.bean;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,27 +49,10 @@ public class SimplePersonBean {
 					person.put("date_of_birth", date.get("m")+"/"+date.get("d")+"/"+date.get("y"));
 					
 				}
-//				if(personal.has("ethnicity")){
-//					JSONObject races = personal.getJSONObject("ethnicity");
-//					Map<String, Boolean> race = new HashMap<String, Boolean>();
-//					race.put(races.get("text").toString(), true);
-//					person.put("ethnicity", race);
-//				}
+
 			}
 			List<Map<String, String>> healthHistoryList = new ArrayList<Map<String,String>>();
-//			if(dataXML.has("condition")){
-//				JSONObject condition = dataXML.getJSONObject("condition");
-//				
-//					Map<String, String> healthHistory = new HashMap<String, String>();
-//					JSONObject name = condition.getJSONObject("name");
-//					healthHistory.put("Disease Name", name.get("text").toString());
-//					healthHistory.put("Detailed Disease Name", name.get("text").toString());
-//					JSONArray code = name.getJSONArray("code");
-//					healthHistory.put("Age At Diagnosis", code.getJSONObject(1).getString("value").substring(9));
-//					healthHistoryList.add(healthHistory);
-//					person.put("Health History", healthHistoryList);
-//					
-//				}
+
 			if(dataXML.has("family-history")){
 				parseFamilyHistory(dataXML, person);
 			}
@@ -205,24 +189,6 @@ public class SimplePersonBean {
 				JSONObject relative = familyHistory.getJSONObject("relative");
 				if(relative.has("relationship")){
 					relation = relative.getJSONObject("relationship");
-//					if(relation.getString("text").equalsIgnoreCase("self")){
-//						if(relative.has("relative-name")){
-//							JSONObject relativeName = relative.getJSONObject("relative-name");
-//							if(relativeName.has("name")){
-//								JSONObject name = relativeName.getJSONObject("name");
-//								relMap.put("name", name.get("full"));
-//							}
-//					}
-//						if(relative.has("date-of-birth")){
-//							JSONObject dateOfBirth = relative.getJSONObject("date-of-birth");
-//							if((dateOfBirth.length()>0)&&(dateOfBirth.has("m"))&&(dateOfBirth.has("d"))&&(dateOfBirth.has("y"))){
-//								relMap.put("date_of_birth", dateOfBirth.get("m")+"/"+dateOfBirth.get("d")+"/"+dateOfBirth.get("y"));
-//							}else if((dateOfBirth.length()>0)&&(dateOfBirth.has("y"))){
-//								relMap.put("date_of_birth", dateOfBirth.get("y"));
-//							}
-//						}
-//						
-//					}
 						if(relative.has("relative-name")){
 							JSONObject relativeName = relative.getJSONObject("relative-name");
 							if(relativeName.has("name")){
@@ -234,22 +200,9 @@ public class SimplePersonBean {
 							JSONObject dateOfBirth = relative.getJSONObject("date-of-birth");
 							if((dateOfBirth.length()>0)&&(dateOfBirth.has("m"))&&(dateOfBirth.has("d"))&&(dateOfBirth.has("y"))){
 								relMap.put("date_of_birth", dateOfBirth.get("m")+"/"+dateOfBirth.get("d")+"/"+dateOfBirth.get("y"));
-//								relMap.put("is_alive", "alive");
-							}//else if((dateOfBirth.length()>0)&&(dateOfBirth.has("y"))){
-//								relMap.put("date_of_birth", dateOfBirth.get("y"));
-//								relMap.put("is_alive", "alive");
-//							}else{
-//								relMap.put("is_alive", "unknown");
-//							}
+							}
 						}
 						
-						//Relationship to lower case.
-						
-						
-				//		relativeMap.put(relation.get("text").toString(), relMap);
-				//		relatives.add(relativeMap);
-						
-					
 				}
 			}
 		}
@@ -257,7 +210,9 @@ public class SimplePersonBean {
 		
 		if(dataXML.has("common")){
 			JSONObject common = dataXML.getJSONObject("common");
-			relMap.put("id", common.get("client-thing-id"));
+			if(common.has("client-thing-id")){
+				relMap.put("id", common.get("client-thing-id"));
+			}
 			if(common.has("related-thing")){
 				Object relatedThings = common.get("related-thing");
 				if(relatedThings instanceof JSONArray){
@@ -363,6 +318,30 @@ public class SimplePersonBean {
 					}
 					relMap.put("twin_status", fhhExtension.get("twin"));
 					relMap.put("adopted", fhhExtension.get("adopted"));
+					if(fhhExtension.has("dateOfBirth")){
+						JSONObject dateOfBirth = fhhExtension.getJSONObject("dateOfBirth");
+						if(dateOfBirth.has("code")){
+							JSONObject code = dateOfBirth.getJSONObject("code");
+							if(code.get("value").toString().contains("/")){
+								relMap.put("date_of_birth", code.get("value"));
+							}else if(code.get("value").toString().contains("ageRange")){
+								relMap.put("is_alive", "alive");
+								if(code.get("value").toString().substring(9).equalsIgnoreCase("sixties")){
+									relMap.put("estimated_age", "senior");
+								}else{
+									relMap.put("estimated_age",code.get("value").toString().substring(9));
+								}
+							}else if(code.get("value").toString().equalsIgnoreCase("Unknown")){
+									relMap.put("is_alive", "Unknown");
+							}else{
+								Long year = (Long) code.get("value");
+								int birthYear = year.intValue();
+								int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+								relMap.put("age", currentYear-birthYear);
+							}
+						}
+						
+					}
 					if(fhhExtension.has("ethnicities")){
 						Object ethnicities = fhhExtension.get("ethnicities");
 						if(ethnicities instanceof JSONArray){
@@ -517,13 +496,13 @@ public class SimplePersonBean {
 						nep++;
 					}
 					else if(relation.get("text").toString().equalsIgnoreCase("Grandson")){
-						relMap.put("relationship", "grand_son");
-						person.put("grand_son_"+gs, relMap);
+						relMap.put("relationship", "grandson");
+						person.put("grandson_"+gs, relMap);
 						gs++;
 					}
 					else if(relation.get("text").toString().equalsIgnoreCase("Granddaughter")){
-						relMap.put("relationship", "grand_daughter");
-						person.put("grand_daughter_"+gd, relMap);
+						relMap.put("relationship", "granddaughter");
+						person.put("granddaughter_"+gd, relMap);
 						gd++;
 					}
 					else{						

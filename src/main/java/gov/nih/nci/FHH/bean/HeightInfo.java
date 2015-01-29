@@ -25,8 +25,8 @@ public static final String heightType = "40750a6a-89b2-455c-bd8d-b420a4cb500b";
 	
 	private String id = "";
 	private String versionStamp = "";
-	private String value = "";
-	private String unit = "";
+	public String value = "";
+	public String unit = "";
 	public static String height = "";
 	public static String heightUnit = "";
 	
@@ -79,6 +79,7 @@ public static final String heightType = "40750a6a-89b2-455c-bd8d-b420a4cb500b";
 		
 		try {
 			String expr = "/FamilyHistory/subject/patient/patientPerson/subjectOf2/clinicalObservation";
+			this.setHeight(""); this.setHeightUnit("");
 			NodeList nodeList = (NodeList) xPath.compile(expr).evaluate(doc, XPathConstants.NODESET);
 			for (int i = 0;null!=nodeList && i < nodeList.getLength(); i++) {
 		        Node node = nodeList.item(i);
@@ -96,15 +97,16 @@ public static final String heightType = "40750a6a-89b2-455c-bd8d-b420a4cb500b";
 		            }
 		        	
 		        	if(heightFound) {
+		        		
 		        		NamedNodeMap vAttributesList = eElement.getElementsByTagName("value").item(0).getAttributes();
 			        	for (int j = 0; j < vAttributesList.getLength(); j++) {
 			        		if( vAttributesList.item(j).getNodeName().equals("value")) {
 			        			setValue(vAttributesList.item(j).getNodeValue());
-			        			height = this.getValue();
+			        			this.setHeight(this.getValue());
 			        		}
 			        		if( vAttributesList.item(j).getNodeName().equals("unit")) {
 			        			setUnit(vAttributesList.item(j).getNodeValue());
-			        			heightUnit = this.getUnit();
+			        			this.setHeightUnit(this.getUnit());
 			        		}
 			                System.out.println("Attribute: "
 			                        + vAttributesList.item(j).getNodeName() + " = "
@@ -183,6 +185,22 @@ public static final String heightType = "40750a6a-89b2-455c-bd8d-b420a4cb500b";
 		
 		RequestTemplate template = new RequestTemplate(ConnectionFactory.getConnection());
 		template.makeRequest(request, personInfo);
+	}
+
+	public static String getHeight() {
+		return height;
+	}
+
+	public static void setHeight(String height) {
+		HeightInfo.height = height;
+	}
+
+	public static String getHeightUnit() {
+		return heightUnit;
+	}
+
+	public static void setHeightUnit(String heightUnit) {
+		HeightInfo.heightUnit = heightUnit;
 	}
 
 	public void pushData(String authToken, DataBean dataBean) {
