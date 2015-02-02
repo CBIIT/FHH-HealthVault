@@ -243,25 +243,29 @@ public class HealthVaultServices {
 			e.printStackTrace();
 		}
 		
-		PersonalDemographicInfo personalDemographicInfo = new PersonalDemographicInfo();
-		personalDemographicInfo.pushData(authToken, dataBean);
-		
-		BasicDemographicInfo basicDemographicInfo = new BasicDemographicInfo();
-		basicDemographicInfo.pushData(authToken, dataBean);
-		
-		WeightInfo weightInfo = new WeightInfo();
-		weightInfo.pushData(authToken, dataBean);
-		
-		HeightInfo heightInfo = new HeightInfo();
-		heightInfo.pushData(authToken, dataBean);
-		
-		FamilyHistory familyHistory = new FamilyHistory();
-		familyHistory.pushData(authToken, dataBean);
-		
-//		FileInfo fileInfo = new FileInfo();
-//		fileInfo.pushData(authToken, dataBean);
-
-		return Response.status(200).entity("success").build();
+		try{
+			PersonalDemographicInfo personalDemographicInfo = new PersonalDemographicInfo();
+			personalDemographicInfo.pushData(authToken, dataBean);
+			
+			BasicDemographicInfo basicDemographicInfo = new BasicDemographicInfo();
+			basicDemographicInfo.pushData(authToken, dataBean);
+			
+			WeightInfo weightInfo = new WeightInfo();
+			weightInfo.pushData(authToken, dataBean);
+			
+			HeightInfo heightInfo = new HeightInfo();
+			heightInfo.pushData(authToken, dataBean);
+			
+			FamilyHistory familyHistory = new FamilyHistory();
+			familyHistory.pushData(authToken, dataBean);
+			
+	//		FileInfo fileInfo = new FileInfo();
+	//		fileInfo.pushData(authToken, dataBean);
+	
+			return Response.status(200).entity("success").build();
+		}catch(Exception e){
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error while saving the personal history to Health Vault").build();
+		}
 
 	}	
 	
@@ -280,40 +284,21 @@ public class HealthVaultServices {
 			e.printStackTrace();
 		}
 		
-		RecordBean recordBean = new RecordBean();
-		String recordData = recordBean.pullData(authToken);
-//		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();  
-//        DocumentBuilder builder;  
-//        try{
-//        	builder = factory.newDocumentBuilder();
-//        	Document doc = builder.parse(new InputSource(new StringReader(recordData)));
-//        	SimplePersonBean pBean = new SimplePersonBean();
-//    		pBean.parseXml(doc);
-//        }catch(Exception e){
-//        	e.printStackTrace();
-//        }
-		
-		JSONObject xmlJsonObj = XML.toJSONObject(recordData);
-		String jsonString = xmlJsonObj.toString(4);
-		SimplePersonBean pBean = new SimplePersonBean();
-		Map<String, Object> person = pBean.parseJson(xmlJsonObj);
-//		HashMap<String, Object> result = null;
-//		try {
-//			result = new ObjectMapper().readValue(jsonString, HashMap.class);
-//		} catch (JsonParseException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (JsonMappingException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		pBean.transferToSimpleBean(result);
-		System.out.println("Json String "+jsonString);
-		System.out.println(person);
-        return Response.status(200).entity(person).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS").header("Access-Control-Allow-Headers", "Content-Type, Content-Range, Content-Disposition, Content-Description").build();
+		try{
+			RecordBean recordBean = new RecordBean();
+			String recordData = recordBean.pullData(authToken);
+	
+			JSONObject xmlJsonObj = XML.toJSONObject(recordData);
+			String jsonString = xmlJsonObj.toString(4);
+			SimplePersonBean pBean = new SimplePersonBean();
+			Map<String, Object> person = pBean.parseJson(xmlJsonObj);
+	
+			System.out.println("Json String "+jsonString);
+			System.out.println(person);
+			return Response.status(200).entity(person).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS").header("Access-Control-Allow-Headers", "Content-Type, Content-Range, Content-Disposition, Content-Description").build();
+		}catch(Exception e){
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error while retrieving the personal history from Health Vault").build();
+		}
 
 	}	
 	

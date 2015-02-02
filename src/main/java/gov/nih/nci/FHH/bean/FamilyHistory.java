@@ -1070,8 +1070,16 @@ public class FamilyHistory implements Serializable, thing{
 			        		}else if(condition.getNextSibling().getNodeName().contains("sourceOf")){
 			        			//Remove the condition from the conditions list if the condition has a code
 			        			String conditionCode = conditionMap.get("conditionCode").toString();
+			        			String conditionName = conditionMap.get("condition").toString();
 			        			if(conditionCode.matches("^[0-9]*$")){
-			        				conditions.remove(conditions.remove(conditions.size()-1));
+			        				Iterator<Map<String, Object>> itr = conditions.iterator();
+			    					while(itr.hasNext()){
+			    						Map<String, Object> condMap = itr.next();
+			        					if(conditionName.equals(condMap.get("condition"))){
+			        						itr.remove();
+			        					}
+			        				}
+//			        				conditions.remove(conditions.remove(conditions.size()-1));
 			        			}
 			        			Node sourceOf = condition.getNextSibling();
 			        			Node death = sourceOf.getFirstChild();
