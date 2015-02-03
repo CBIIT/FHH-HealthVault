@@ -30,7 +30,6 @@ public class SimplePersonBean {
 		for(int i = 0;i< things.length();i++){
 			JSONObject thing = things.getJSONObject(i);
 			JSONObject dataXML = thing.getJSONObject("data-xml");
-			System.out.println("keyset =="+dataXML.keySet());
 			if(dataXML.has("basic")){
 				JSONObject basic = dataXML.getJSONObject("basic");
 				if(basic.get("gender").toString().contains("f")){
@@ -113,16 +112,31 @@ public class SimplePersonBean {
 							healthHistory.put("Disease Name", name.get("text"));
 							healthHistory.put("Detailed Disease Name", name.get("text"));
 							if(name.has("code")){
-								JSONArray codes = name.getJSONArray("code");
-								healthHistory.put("Disease Code", codes.getJSONObject(0).get("type")+"-"+codes.getJSONObject(0).get("value"));
-								System.out.println("age length for sixties=="+codes.getJSONObject(1).getString("value"));
-								if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("sixties")){
-									healthHistory.put("Age At Diagnosis", "senior");
+								Object code = name.get("code");
+								if(code instanceof JSONArray){
+									JSONArray codes = name.getJSONArray("code");
+									healthHistory.put("Disease Code", codes.getJSONObject(0).get("type")+"-"+codes.getJSONObject(0).get("value"));
+									if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("sixties")){
+										healthHistory.put("Age At Diagnosis", "senior");
+									}
+									else{
+										healthHistory.put("Age At Diagnosis", codes.getJSONObject(1).getString("value").substring(9));
+									}
 								}
-								else{
-									healthHistory.put("Age At Diagnosis", codes.getJSONObject(1).getString("value").substring(9));
+								if(code instanceof JSONObject){
+									JSONObject codeObj = name.getJSONObject("code");
+									healthHistory.put("Disease Code", codeObj.get("type")+"-"+codeObj.get("value"));
+									if(codeObj.get("value").toString().contains("ageRange")){
+										if(codeObj.getString("value").substring(9).equalsIgnoreCase("sixties")){
+											healthHistory.put("Age At Diagnosis", "senior");
+										}
+										else{
+											healthHistory.put("Age At Diagnosis", codeObj.getString("value").substring(9));
+										}
+									}else{
+										healthHistory.put("Age At Diagnosis", "Unknown");
+									}
 								}
-							
 							}
 							
 						}
@@ -297,7 +311,7 @@ public class SimplePersonBean {
 								person.put("weight", weight.get("pounds"));
 							}
 							if(weight.get("kilograms")!=""){
-								person.put("weight_unit", "kilograms");
+								person.put("weight_unit", "kilogram");
 								person.put("weight", weight.get("kilograms"));
 							}
 						}if(fhhExtension.has("consanguinity")){
@@ -307,7 +321,7 @@ public class SimplePersonBean {
 						if(fhhExtension.has("height")){
 							JSONObject height = fhhExtension.getJSONObject("height");
 							if(height.get("centemiters")!=""){
-								person.put("height_unit", "centemiters");
+								person.put("height_unit", "centimeters");
 								person.put("height", height.get("centemiters"));
 							}
 							if(height.get("inches")!=""){
@@ -518,9 +532,7 @@ public class SimplePersonBean {
 						person.put("race", race);
 						Map<String, Object> ethnicity = (Map<String, Object>) self.get("ethnicity");
 						person.put("ethnicity", ethnicity);
-						System.out.println("health condition =="+self.get("Health History"));
 						person.put("Health History", self.get("Health History"));
-						System.out.println(self.get("race"));
 						person.remove("self");
 					}
 										

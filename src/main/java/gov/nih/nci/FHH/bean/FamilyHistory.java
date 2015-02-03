@@ -1146,10 +1146,11 @@ public class FamilyHistory implements Serializable, thing{
 					conditions.add(conditionMap);
 	        	}
     		}
-	        	for(int d = 0; d< conditions.size();d++){
-	        		Map<String, Object> condMap = conditions.get(d);
+        		Iterator<Map<String, Object>> itr = conditions.iterator();
+				while(itr.hasNext()){
+					Map<String, Object> condMap = itr.next();
 	        		if((condMap.get("condition").equals("FRATERNAL"))||(condMap.get("condition").equals("IDENTICAL"))||(condMap.get("condition").equals("adopted"))){
-	        			conditions.remove(d);
+	        			itr.remove();
 	        		}
 	        	}
 	        	

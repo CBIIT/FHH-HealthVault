@@ -1,3 +1,4 @@
+package gov.nih.nci.FHH.bean;
 import gov.nih.nci.FHH.bean.PersonalDemographicInfo;
 import gov.nih.nci.FHH.bean.DataBean;
 

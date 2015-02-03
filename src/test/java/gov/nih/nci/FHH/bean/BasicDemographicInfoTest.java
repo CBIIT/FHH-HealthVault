@@ -1,4 +1,4 @@
-
+package gov.nih.nci.FHH.bean;
 import gov.nih.nci.FHH.bean.BasicDemographicInfo;
 import gov.nih.nci.FHH.bean.DataBean;
 
