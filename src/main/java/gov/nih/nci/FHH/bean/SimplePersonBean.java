@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
+import javassist.expr.Instanceof;
+
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -90,16 +92,59 @@ public class SimplePersonBean {
 								relMap.put("cause_of_death", name.get("text"));
 								relMap.put("detailed_cause_of_death", name.get("text"));
 								if(name.has("code")){
-									JSONArray codes = name.getJSONArray("code");
-									relMap.put("cause_of_death_code", codes.getJSONObject(0).get("type")+"-"+codes.getJSONObject(0).get("value"));
-									relMap.put("cause_of_death_system", codes.getJSONObject(0).get("type"));
-									if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("sixties")){
-										relMap.put("Age At Diagnosis", "senior");
-										relMap.put("estimated_death_age", "senior");
+									Object code = name.get("code");
+									if(code instanceof JSONArray){
+										JSONArray codes = name.getJSONArray("code");
+										relMap.put("cause_of_death_code", codes.getJSONObject(0).get("type")+"-"+codes.getJSONObject(0).get("value"));
+										relMap.put("cause_of_death_system", codes.getJSONObject(0).get("type"));
+										if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("sixties")){
+											relMap.put("Age At Diagnosis", "senior");
+											relMap.put("estimated_death_age", "senior");
+										}else if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("infancy")){
+											relMap.put("Age At Diagnosis", "infant");
+											relMap.put("estimated_death_age", "infant");
+										}else if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("forties")){
+											relMap.put("Age At Diagnosis", "fourties");
+											relMap.put("estimated_death_age", "fourties");
+										}else if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("childhood")){
+											relMap.put("Age At Diagnosis", "child");
+											relMap.put("estimated_death_age", "child");
+										}else if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("adolescence")){
+											relMap.put("Age At Diagnosis", "teen");
+											relMap.put("estimated_death_age", "teen");
+										}else{
+											relMap.put("Age At Diagnosis", codes.getJSONObject(1).getString("value").substring(9));
+											relMap.put("estimated_death_age", codes.getJSONObject(1).getString("value").substring(9));
+										}
 									}
-									else{
-										relMap.put("Age At Diagnosis", codes.getJSONObject(1).getString("value").substring(9));
-										relMap.put("estimated_death_age", codes.getJSONObject(1).getString("value").substring(9));
+									if(code instanceof JSONObject){
+										JSONObject codeObj = name.getJSONObject("code");
+										relMap.put("cause_of_death_code", codeObj.get("type")+"-"+codeObj.get("value"));
+										relMap.put("cause_of_death_system", codeObj.get("type"));
+										if(codeObj.get("value").toString().contains("ageRange")){
+											if(codeObj.getString("value").substring(9).equalsIgnoreCase("sixties")){
+												relMap.put("Age At Diagnosis", "senior");
+												relMap.put("estimated_death_age", "senior");
+											}else if(codeObj.getString("value").substring(9).equalsIgnoreCase("infancy")){
+												relMap.put("Age At Diagnosis", "infant");
+												relMap.put("estimated_death_age", "infant");
+											}else if(codeObj.getString("value").substring(9).equalsIgnoreCase("forties")){
+												relMap.put("Age At Diagnosis", "fourties");
+												relMap.put("estimated_death_age", "fourties");
+											}else if(codeObj.getString("value").substring(9).equalsIgnoreCase("childhood")){
+												relMap.put("Age At Diagnosis", "child");
+												relMap.put("estimated_death_age", "child");
+											}else if(codeObj.getString("value").substring(9).equalsIgnoreCase("adolescence")){
+												relMap.put("Age At Diagnosis", "teen");
+												relMap.put("estimated_death_age", "teen");
+											}else{
+												relMap.put("Age At Diagnosis", codeObj.getString("value").substring(9));
+												relMap.put("estimated_death_age", codeObj.getString("value").substring(9));
+											}
+										}else{
+											relMap.put("Age At Diagnosis", "Unknown");
+											relMap.put("estimated_death_age", "Unknown");
+										}
 									}
 								}
 							}
@@ -118,8 +163,15 @@ public class SimplePersonBean {
 									healthHistory.put("Disease Code", codes.getJSONObject(0).get("type")+"-"+codes.getJSONObject(0).get("value"));
 									if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("sixties")){
 										healthHistory.put("Age At Diagnosis", "senior");
-									}
-									else{
+									}else if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("infancy")){
+										healthHistory.put("Age At Diagnosis", "infant");
+									}else if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("forties")){
+										healthHistory.put("Age At Diagnosis", "fourties");
+									}else if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("childhood")){
+										healthHistory.put("Age At Diagnosis", "child");
+									}else if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("adolescence")){
+										healthHistory.put("Age At Diagnosis", "teen");
+									}else{
 										healthHistory.put("Age At Diagnosis", codes.getJSONObject(1).getString("value").substring(9));
 									}
 								}
@@ -129,8 +181,15 @@ public class SimplePersonBean {
 									if(codeObj.get("value").toString().contains("ageRange")){
 										if(codeObj.getString("value").substring(9).equalsIgnoreCase("sixties")){
 											healthHistory.put("Age At Diagnosis", "senior");
-										}
-										else{
+										}else if(codeObj.getString("value").substring(9).equalsIgnoreCase("infancy")){
+											healthHistory.put("Age At Diagnosis", "infant");
+										}else if(codeObj.getString("value").substring(9).equalsIgnoreCase("forties")){
+											healthHistory.put("Age At Diagnosis", "fourties");
+										}else if(codeObj.getString("value").substring(9).equalsIgnoreCase("childhood")){
+											healthHistory.put("Age At Diagnosis", "child");
+										}else if(codeObj.getString("value").substring(9).equalsIgnoreCase("adolescence")){
+											healthHistory.put("Age At Diagnosis", "teen");
+										}else{
 											healthHistory.put("Age At Diagnosis", codeObj.getString("value").substring(9));
 										}
 									}else{
@@ -158,16 +217,60 @@ public class SimplePersonBean {
 							relMap.put("cause_of_death", name.get("text"));
 							relMap.put("detailed_cause_of_death", name.get("text"));
 							if(name.has("code")){
-								JSONArray codes = name.getJSONArray("code");
-								relMap.put("cause_of_death_code", codes.getJSONObject(0).get("type")+"-"+codes.getJSONObject(0).get("value"));
-								relMap.put("cause_of_death_system", codes.getJSONObject(0).get("type"));
-								if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("sixties")){
-									relMap.put("Age At Diagnosis", "senior");
-									relMap.put("estimated_death_age", "senior");
+								Object code = name.get("code");
+								if(code instanceof JSONArray){
+									JSONArray codes = name.getJSONArray("code");
+									relMap.put("cause_of_death_code", codes.getJSONObject(0).get("type")+"-"+codes.getJSONObject(0).get("value"));
+									relMap.put("cause_of_death_system", codes.getJSONObject(0).get("type"));
+									if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("sixties")){
+										relMap.put("Age At Diagnosis", "senior");
+										relMap.put("estimated_death_age", "senior");
+									}else if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("infancy")){
+										relMap.put("Age At Diagnosis", "infant");
+										relMap.put("estimated_death_age", "infant");
+									}else if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("forties")){
+										relMap.put("Age At Diagnosis", "fourties");
+										relMap.put("estimated_death_age", "fourties");
+									}else if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("childhood")){
+										relMap.put("Age At Diagnosis", "child");
+										relMap.put("estimated_death_age", "child");
+									}else if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("adolescence")){
+										relMap.put("Age At Diagnosis", "teen");
+										relMap.put("estimated_death_age", "teen");
+									}else{
+										relMap.put("Age At Diagnosis", codes.getJSONObject(1).getString("value").substring(9));
+										relMap.put("estimated_death_age", codes.getJSONObject(1).getString("value").substring(9));
+									}
 								}
-								else{
-									relMap.put("Age At Diagnosis", codes.getJSONObject(1).getString("value").substring(9));
-									relMap.put("estimated_death_age", codes.getJSONObject(1).getString("value").substring(9));
+								if(code instanceof JSONObject){
+									JSONObject codeObj = name.getJSONObject("code");
+									relMap.put("cause_of_death_code", codeObj.get("type")+"-"+codeObj.get("value"));
+									relMap.put("cause_of_death_system", codeObj.get("type"));
+									if(codeObj.get("value").toString().contains("ageRange")){
+										if(codeObj.getString("value").substring(9).equalsIgnoreCase("sixties")){
+											relMap.put("Age At Diagnosis", "senior");
+											relMap.put("estimated_death_age", "senior");
+										}else if(codeObj.getString("value").substring(9).equalsIgnoreCase("infancy")){
+											relMap.put("Age At Diagnosis", "infant");
+											relMap.put("estimated_death_age", "infant");
+										}else if(codeObj.getString("value").substring(9).equalsIgnoreCase("forties")){
+											relMap.put("Age At Diagnosis", "fourties");
+											relMap.put("estimated_death_age", "fourties");
+										}else if(codeObj.getString("value").substring(9).equalsIgnoreCase("childhood")){
+											relMap.put("Age At Diagnosis", "child");
+											relMap.put("estimated_death_age", "child");
+										}else if(codeObj.getString("value").substring(9).equalsIgnoreCase("adolescence")){
+											relMap.put("Age At Diagnosis", "teen");
+											relMap.put("estimated_death_age", "teen");
+										}else{
+											relMap.put("Age At Diagnosis", codeObj.getString("value").substring(9));
+											relMap.put("estimated_death_age", codeObj.getString("value").substring(9));
+										}
+									}else{
+										relMap.put("Age At Diagnosis", "Unknown");
+										relMap.put("estimated_death_age", "Unknown");
+									}
+									
 								}
 							}
 						}
@@ -179,14 +282,46 @@ public class SimplePersonBean {
 						healthHistory.put("Disease Name", name.get("text"));
 						healthHistory.put("Detailed Disease Name", name.get("text"));
 						if(name.has("code")){
-							JSONArray codes = name.getJSONArray("code");
-							healthHistory.put("Disease Code", codes.getJSONObject(0).get("type")+"-"+codes.getJSONObject(0).get("value"));
-							if(codes.getJSONObject(1).getString("value")!=null){
-								if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("sixties")){
-									healthHistory.put("Age At Diagnosis", "senior");
+							Object code = name.get("code");
+							if(code instanceof JSONArray){
+								JSONArray codes = name.getJSONArray("code");
+								healthHistory.put("Disease Code", codes.getJSONObject(0).get("type")+"-"+codes.getJSONObject(0).get("value"));
+								if(codes.getJSONObject(1).getString("value")!=null){
+									if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("sixties")){
+										healthHistory.put("Age At Diagnosis", "senior");
+									}else if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("infancy")){
+										healthHistory.put("Age At Diagnosis", "infant");
+									}else if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("forties")){
+										healthHistory.put("Age At Diagnosis", "fourties");
+									}else if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("childhood")){
+										healthHistory.put("Age At Diagnosis", "child");
+									}else if(codes.getJSONObject(1).getString("value").substring(9).equalsIgnoreCase("adolescence")){
+										healthHistory.put("Age At Diagnosis", "teen");
+									}else{
+										healthHistory.put("Age At Diagnosis", codes.getJSONObject(1).getString("value").substring(9));
+									}
 								}
-								else{
-									healthHistory.put("Age At Diagnosis", codes.getJSONObject(1).getString("value").substring(9));
+//								healthHistoryList.add(healthHistory);
+							}
+							if(code instanceof JSONObject){
+								JSONObject codeObj = name.getJSONObject("code");
+								healthHistory.put("Disease Code", codeObj.get("type")+"-"+codeObj.get("value"));
+								if(codeObj.get("value").toString().contains("ageRange")){
+									if(codeObj.getString("value").substring(9).equalsIgnoreCase("sixties")){
+										healthHistory.put("Age At Diagnosis", "senior");
+									}else if(codeObj.getString("value").substring(9).equalsIgnoreCase("infancy")){
+										healthHistory.put("Age At Diagnosis", "infant");
+									}else if(codeObj.getString("value").substring(9).equalsIgnoreCase("forties")){
+										healthHistory.put("Age At Diagnosis", "fourties");
+									}else if(codeObj.getString("value").substring(9).equalsIgnoreCase("childhood")){
+										healthHistory.put("Age At Diagnosis", "child");
+									}else if(codeObj.getString("value").substring(9).equalsIgnoreCase("adolescence")){
+										healthHistory.put("Age At Diagnosis", "teen");
+									}else{
+										healthHistory.put("Age At Diagnosis", codeObj.getString("value").substring(9));
+									}
+								}else{
+									healthHistory.put("Age At Diagnosis", "Unknown");
 								}
 							}
 							healthHistoryList.add(healthHistory);
@@ -342,6 +477,14 @@ public class SimplePersonBean {
 								relMap.put("is_alive", "alive");
 								if(code.get("value").toString().substring(9).equalsIgnoreCase("sixties")){
 									relMap.put("estimated_age", "senior");
+								}else if(code.getString("value").substring(9).equalsIgnoreCase("infancy")){
+									relMap.put("Age At Diagnosis", "infant");
+								}else if(code.getString("value").substring(9).equalsIgnoreCase("forties")){
+									relMap.put("Age At Diagnosis", "fourties");
+								}else if(code.getString("value").substring(9).equalsIgnoreCase("childhood")){
+									relMap.put("Age At Diagnosis", "child");
+								}else if(code.getString("value").substring(9).equalsIgnoreCase("adolescence")){
+									relMap.put("Age At Diagnosis", "teen");
 								}else{
 									relMap.put("estimated_age",code.get("value").toString().substring(9));
 								}
