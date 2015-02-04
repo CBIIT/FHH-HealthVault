@@ -49,36 +49,12 @@ public class FamilyHistory implements Serializable, thing{
 	private String condition = "";
 	private String genderCode = "";
 	private String genderCodeSystemName = "";
-	private String race = "";
-	private String raceCode = "";
-	private String raceCodeSystemName = "";
-	private String ethnicity = "";
-	private String ethnicityCode = "";
-	private String ethnicitySystemName = "";
 	private String genderValue = "";
-	private String conditionCode = "";
-	private String conditionCodeSystemName = "";
 	private String resolution = "";
-	private String deathCondition = "";
-	private String deathConditionCode = "";
-	private String deathConditionSystemName = "";
-	private String selfGender = "";
-	private String selfGenderValue = "";
-	private String selfRace = "";
-	private String selfEthnicity = "";
-	private String selfCondition = "";
-	private String selfConditionCode = "";
-	private String selfConditionSystemName = "";
-	private String selfRaceCode = "";
-	private String selfRaceCodeSystemName = "";
-	private String selfEthnicityCode = "";
-	private String selfEthnicitySystemName = "";
 	private String weight = "";
 	private String weightUnit = "";
 	private String height = "";
 	private String heightUnit = "";
-	private String selfGenderCode = "";
-	private String selfGenderCodeSystemName = "";
 	private String selfId = "";
 	private String relativeId = "";
 	private String estimatedAge = "";
@@ -87,8 +63,6 @@ public class FamilyHistory implements Serializable, thing{
 	private String parentId = "";
 	private String twinStatus = "";
 	boolean adopted = false;
-//	private List<String> races;
-//	private List<String> raceCodes;
 	private String consanguinity;
 	private String dobAgeLow = "";
 	private String dobAgeHigh = "";
@@ -162,84 +136,6 @@ public class FamilyHistory implements Serializable, thing{
 	public void setSelfId(String selfId) {
 		this.selfId = selfId;
 	}
-	public String getSelfGenderValue() {
-		return selfGenderValue;
-	}
-	public void setSelfGenderValue(String selfGenderValue) {
-		this.selfGenderValue = selfGenderValue;
-	}
-	public String getSelfGenderCode() {
-		return selfGenderCode;
-	}
-	public void setSelfGenderCode(String selfGenderCode) {
-		this.selfGenderCode = selfGenderCode;
-	}
-	public String getSelfGenderCodeSystemName() {
-		return selfGenderCodeSystemName;
-	}
-	public void setSelfGenderCodeSystemName(String selfGenderCodeSystemName) {
-		this.selfGenderCodeSystemName = selfGenderCodeSystemName;
-	}
-	public String getSelfGender() {
-		return selfGender;
-	}
-	public void setSelfGender(String selfGender) {
-		this.selfGender = selfGender;
-	}
-	public String getSelfRace() {
-		return selfRace;
-	}
-	public void setSelfRace(String selfRace) {
-		this.selfRace = selfRace;
-	}
-	public String getSelfEthnicity() {
-		return selfEthnicity;
-	}
-	public void setSelfEthnicity(String selfEthnicity) {
-		this.selfEthnicity = selfEthnicity;
-	}
-	public String getSelfCondition() {
-		return selfCondition;
-	}
-	public void setSelfCondition(String selfCondition) {
-		this.selfCondition = selfCondition;
-	}
-	public String getSelfConditionCode() {
-		return selfConditionCode;
-	}
-	public void setSelfConditionCode(String selfConditionCode) {
-		this.selfConditionCode = selfConditionCode;
-	}
-	public String getSelfConditionSystemName() {
-		return selfConditionSystemName;
-	}
-	public void setSelfConditionSystemName(String selfConditionSystemName) {
-		this.selfConditionSystemName = selfConditionSystemName;
-	}
-	public String getSelfRaceCode() {
-		return selfRaceCode;
-	}
-	public void setSelfRaceCode(String selfRaceCode) {
-		this.selfRaceCode = selfRaceCode;
-	}
-	public String getSelfRaceCodeSystemName() {
-		return selfRaceCodeSystemName;
-	}
-	public void setSelfRaceCodeSystemName(String selfRaceCodeSystemName) {
-		this.selfRaceCodeSystemName = selfRaceCodeSystemName;
-	}
-	public String getSelfEthnicityCode() {
-		return selfEthnicityCode;
-	}
-	public void setSelfEthnicityCode(String selfEthnicityCode) {
-		this.selfEthnicityCode = selfEthnicityCode;
-	}
-	public String getSelfEthnicitySystemName() {
-		return selfEthnicitySystemName;
-	}
-	public void setSelfEthnicitySystemName(String selfEthnicitySystemName) {
-		this.selfEthnicitySystemName = selfEthnicitySystemName;
-	}
 	public String getWeight() {
 		return weight;
 	}
@@ -264,41 +160,11 @@ public class FamilyHistory implements Serializable, thing{
 	public void setHeightUnit(String heightUnit) {
 		this.heightUnit = heightUnit;
 	}
-	public String getDeathCondition() {
-		return deathCondition;
-	}
-	public void setDeathCondition(String deathCondition) {
-		this.deathCondition = deathCondition;
-	}
-	public String getDeathConditionCode() {
-		return deathConditionCode;
-	}
-	public void setDeathConditionCode(String deathConditionCode) {
-		this.deathConditionCode = deathConditionCode;
-	}
-	public String getDeathConditionSystemName() {
-		return deathConditionSystemName;
-	}
-	public void setDeathConditionSystemName(String deathConditionSystemName) {
-		this.deathConditionSystemName = deathConditionSystemName;
-	}
 	public String getResolution() {
 		return resolution;
 	}
 	public void setResolution(String resolution) {
 		this.resolution = resolution;
-	}
-	public String getConditionCode() {
-		return conditionCode;
-	}
-	public void setConditionCode(String conditionCode) {
-		this.conditionCode = conditionCode;
-	}
-	public String getConditionCodeSystemName() {
-		return conditionCodeSystemName;
-	}
-	public void setConditionCodeSystemName(String conditionCodeSystemName) {
-		this.conditionCodeSystemName = conditionCodeSystemName;
 	}
 	public String getGenderValue() {
 		return genderValue;
@@ -311,42 +177,6 @@ public class FamilyHistory implements Serializable, thing{
 	}
 	public void setGenderCodeSystemName(String genderCodeSystemName) {
 		this.genderCodeSystemName = genderCodeSystemName;
-	}
-	public String getRace() {
-		return race;
-	}
-	public void setRace(String race) {
-		this.race = race;
-	}
-	public String getRaceCode() {
-		return raceCode;
-	}
-	public void setRaceCode(String raceCode) {
-		this.raceCode = raceCode;
-	}
-	public String getRaceCodeSystemName() {
-		return raceCodeSystemName;
-	}
-	public void setRaceCodeSystemName(String raceCodeSystemName) {
-		this.raceCodeSystemName = raceCodeSystemName;
-	}
-	public String getEthnicity() {
-		return ethnicity;
-	}
-	public void setEthnicity(String ethnicity) {
-		this.ethnicity = ethnicity;
-	}
-	public String getEthnicityCode() {
-		return ethnicityCode;
-	}
-	public void setEthnicityCode(String ethnicityCode) {
-		this.ethnicityCode = ethnicityCode;
-	}
-	public String getEthnicitySystemName() {
-		return ethnicitySystemName;
-	}
-	public void setEthnicitySystemName(String ethnicitySystemName) {
-		this.ethnicitySystemName = ethnicitySystemName;
 	}
 	public String getGenderCode() {
 		return genderCode;
@@ -448,9 +278,7 @@ public class FamilyHistory implements Serializable, thing{
 	}
 	private void writeFamilyHistory(String authToken, DataBean dataBean) {
 		String xmlData = dataBean.getXmlData();
-		//setupFamilyHistory(xmlData);
-		Calendar calendar = Calendar.getInstance();
-	     
+		
         Document doc = XmlDocument.parse(xmlData);
 		try {
 		XPath xPath =  XPathFactory.newInstance().newXPath();
@@ -496,8 +324,8 @@ public class FamilyHistory implements Serializable, thing{
 		        }
 	        	expr = "/FamilyHistory/subject/patient/patientPerson/administrativeGenderCode/@displayName";
 				String gender = xPath.compile(expr).evaluate(doc);
-				this.setSelfGender(gender);
-				if(this.getSelfGender().equalsIgnoreCase("male")){
+				this.setGender(gender);
+				if(this.getGender().equalsIgnoreCase("male")){
         			this.setGenderValue("Mr");
         		}
         		else{
@@ -688,8 +516,8 @@ public class FamilyHistory implements Serializable, thing{
 		        infoBuilder.append("<relative-name><name>");
 		        infoBuilder.append("<full>"+this.getFullName()+"</full>");
 		        infoBuilder.append("<title><text>");
-		        infoBuilder.append(this.getSelfGenderValue()+"</text>");
-		        infoBuilder.append("<code><value>"+this.getSelfGenderValue()+"</value>");
+		        infoBuilder.append(this.getGenderValue()+"</text>");
+		        infoBuilder.append("<code><value>"+this.getGenderValue()+"</value>");
 		        infoBuilder.append("<family>wc</family><type>name-prefixes</type><version /></code></title>");
 		        infoBuilder.append("<first /><middle /><last /></name>");
 		        infoBuilder.append("<id>"+this.getSelfId()+"</id>");
@@ -713,7 +541,7 @@ public class FamilyHistory implements Serializable, thing{
 		        infoBuilder.append("<extension source=\""+"urn:gov.hhs.familyhistory.mfhp"+ "\">");
 		        infoBuilder.append("<fhh-extensions version=\""+"1.0"+ "\">");
 		        infoBuilder.append("<gender version=\""+"1.0"+ "\">");
-		        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+this.getSelfGender() +"\" type=\""+this.getSelfGenderCodeSystemName() +"\" value=\""+this.getSelfGenderCode() +"\" version=\""+"3"+"\"/>");
+		        infoBuilder.append("<code family=\""+"HL7"+ "\" name=\""+this.getGender() +"\" type=\""+this.getGenderCodeSystemName() +"\" value=\""+this.getGenderCode() +"\" version=\""+"3"+"\"/>");
 		        infoBuilder.append("</gender>");
 		        if(this.getTwinStatus().equalsIgnoreCase("IDENTICAL")){
 		        	infoBuilder.append("<twin>IDENTICAL</twin>");
@@ -787,7 +615,7 @@ public class FamilyHistory implements Serializable, thing{
 	                        + attributesList.item(j).getNodeValue());
 	        		this.setRelation(attributesList.item(j).getNodeValue());
 	        	}
-	        	
+	        	this.setGender(""); this.setGenderValue("");
 	        	attributesList = eElement.getElementsByTagName("administrativeGenderCode").item(0).getAttributes();
 	        	for(int k=0;k<attributesList.getLength();k++){
 	        		System.out.println("Attribute: "
@@ -805,7 +633,7 @@ public class FamilyHistory implements Serializable, thing{
 	        			this.setGenderValue("Mrs");
 	        		}
 	        	}
-	        	this.setEthnicity("");
+//	        	this.setEthnicity("");
 	        	ethnicities = new ArrayList<Map<String,Object>>();
 	        	for(int e = 0; e< 10;e++){
 		        	if(eElement.getElementsByTagName("ethnicGroupCode").item(e)!=null){
@@ -828,10 +656,12 @@ public class FamilyHistory implements Serializable, thing{
 		        			}
 		        		}
 		        		ethnicities.add(ethnicity);
+		        	}else{
+		        		break;
 		        	}
 		        	
 	        	}
-	        	this.setRace("");
+//	        	this.setRace("");
 	        	races = new ArrayList<Map<String,Object>>();
 	        	for(int r = 0; r < 18;r++){
 		        	if(eElement.getElementsByTagName("raceCode").item(r)!=null){
@@ -854,6 +684,8 @@ public class FamilyHistory implements Serializable, thing{
 		        			}
 		        		}
 		        		races.add(race);
+		        	}else{
+		        		break;
 		        	}
 		        	
 	        	}
@@ -971,8 +803,6 @@ public class FamilyHistory implements Serializable, thing{
 						this.setBirthDate("ageRange.fifties");
 					}else if(this.getDobAgeLow().equals("60")){
 						this.setBirthDate("ageRange.sixties");
-					}else{
-						this.setBirthDate("ageRange.Unknown");
 					}
 	        	}
 	        	
@@ -1007,12 +837,12 @@ public class FamilyHistory implements Serializable, thing{
 				        			}
 			        			}
 	        					if(tempNode.getNodeName().equalsIgnoreCase("codeSystemName")){
-			        				this.setConditionCodeSystemName(tempNode.getNodeValue());
+			        				//this.setConditionCodeSystemName(tempNode.getNodeValue());
 			        				conditionMap.put("conditionCodeSystem", tempNode.getNodeValue());
 			        			}
 			        			if(tempNode.getNodeName().equalsIgnoreCase("code")){
-			        					this.setConditionCode(tempNode.getNodeValue());
-				        				if(this.getConditionCode().equalsIgnoreCase("OTHER")){
+//			        					this.setConditionCode(tempNode.getNodeValue());
+				        				if(tempNode.getNodeValue().equalsIgnoreCase("OTHER")){
 				        					conditionMap.put("conditionCode", "EMPTY");
 				        				}else{
 				        					conditionMap.put("conditionCode", tempNode.getNodeValue());
@@ -1144,6 +974,8 @@ public class FamilyHistory implements Serializable, thing{
 	        			}
 	        		}
 					conditions.add(conditionMap);
+	        	}else{
+	        		break;
 	        	}
     		}
         		Iterator<Map<String, Object>> itr = conditions.iterator();
@@ -1335,16 +1167,16 @@ public class FamilyHistory implements Serializable, thing{
 		StringBuilder infoBuilder = new StringBuilder();
 		if(id != null && !id.equals("")) {
 			infoBuilder.append("<info>");
-	        System.out.println("There is family history");
+	        //System.out.println("There is family history");
 	        infoBuilder.append("<thing-id version-stamp=\"");
 	        infoBuilder.append(versionStamp + "\">");
 	        infoBuilder.append(id);
 	        infoBuilder.append("</thing-id>");
 	        infoBuilder.append("</info>");
-	        System.out.println(infoBuilder.toString());
+	        //System.out.println(infoBuilder.toString());
 	        Authentication auth = new Authentication();
 			PersonInfo personInfo = auth.getPersonInfo(authToken);
-	        System.out.println("Deleting family history");
+	        //System.out.println("Deleting family history");
 	        Request request = new Request();
 			request.setMethodName("RemoveThings");
 			request.setInfo(infoBuilder.toString());
@@ -1382,8 +1214,6 @@ public class FamilyHistory implements Serializable, thing{
     	            Node thing = things.item(i);
     	            setId(xpath.evaluate("thing-id", thing));
     	            setVersionStamp(xpath.evaluate("thing-id/@version-stamp", thing));
-    	            System.out.println(id);
-    	            System.out.println(versionStamp);
 	            	break;
     	        }
 				return id;
