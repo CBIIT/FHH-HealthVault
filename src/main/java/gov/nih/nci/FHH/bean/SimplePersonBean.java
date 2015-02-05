@@ -6,17 +6,16 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
-import javassist.expr.Instanceof;
-
-import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.apache.commons.collections.MultiMap;
-import org.apache.commons.collections.map.MultiValueMap;
 
+
+/**
+ * Transforms the data loaded from Health Vault to the format required by FHH 
+ * 
+ * @author jonnalah
+ *
+ */
 
 public class SimplePersonBean {
 

@@ -1,6 +1,7 @@
 package gov.nih.nci.FHH.bean;
 
 import gov.nih.nci.FHH.Authentication;
+
 import gov.nih.nci.FHH.Marshaller;
 import gov.nih.nci.FHH.RequestTemplate;
 import gov.nih.nci.FHH.util.XmlDocument;
@@ -8,7 +9,6 @@ import gov.nih.nci.FHH.util.XmlDocument;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -29,6 +29,12 @@ import org.xml.sax.InputSource;
 import com.microsoft.hsg.ConnectionFactory;
 import com.microsoft.hsg.Request;
 
+
+/**
+ * Base Class to save Family History to Health Vault 
+ * @author jonnalah
+ *
+ */
 public class FamilyHistory implements Serializable, thing{
 
 	public static final String familyHistoryType = "4a04fcc8-19c1-4d59-a8c7-2031a03f21de";
