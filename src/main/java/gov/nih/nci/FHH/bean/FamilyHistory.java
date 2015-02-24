@@ -797,7 +797,7 @@ public class FamilyHistory implements Serializable, thing{
 						this.setBirthDate("ageRange.infant");
 					}else if((this.getDobAgeLow().equals("2"))&&(this.getDobAgeHigh().equals("10"))){
 						this.setBirthDate("ageRange.child");
-					}else if((this.getDobAgeLow().equals("11"))&&(this.getDobAgeHigh().equals("19"))){
+					}else if((this.getDobAgeLow().equals("10"))||(this.getDobAgeLow().equals("11"))&&(this.getDobAgeHigh().equals("19"))){
 						this.setBirthDate("ageRange.teen");
 					}else if((this.getDobAgeLow().equals("20"))&&(this.getDobAgeHigh().equals("29"))){
 						this.setBirthDate("ageRange.twenties");
@@ -1150,7 +1150,7 @@ public class FamilyHistory implements Serializable, thing{
 			this.setEstimatedAge("infant");
 		}else if((this.getAgeRangeLow().equals("2"))&&(this.getAgeRangeHigh().equals("10"))){
 			this.setEstimatedAge("child");
-		}else if((this.getAgeRangeLow().equals("11"))&&(this.getAgeRangeHigh().equals("19"))){
+		}else if((this.getAgeRangeLow().equals("10"))||(this.getAgeRangeLow().equals("11"))&&(this.getAgeRangeHigh().equals("19"))){
 			this.setEstimatedAge("teen");
 		}else if((this.getAgeRangeLow().equals("20"))&&(this.getAgeRangeHigh().equals("29"))){
 			this.setEstimatedAge("twenties");
