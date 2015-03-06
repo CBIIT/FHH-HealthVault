@@ -19,7 +19,7 @@
         <mshv.service.endpoint.url>https://platform.healthvault-ppe.com/platform/wildcat.ashx</mshv.service.endpoint.url>
         <mshv.keystore.filename>/keystore_dev</mshv.keystore.filename>
         <mshv.keystore.keyname>mfhp</mshv.keystore.keyname>
-        <mshv.keystore.password>5ams0lutions</mshv.keystore.password>
+        <mshv.keystore.password>replace_me</mshv.keystore.password>
         
   </properties>
   
