@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
@@ -229,6 +230,7 @@ public class HealthVaultServices {
 	@Produces("text/plain")
 	public Response putFHHDocumentAjax(DataBean dataBean) {	
 		//String authToken = bean.getAuthToken();
+		System.out.println("In save to health vault service");
 		String encodedAuthToken = dataBean.getAuthToken();
 		String xmlData = dataBean.getXmlData();
 		String thingId = dataBean.getThingId();
@@ -264,7 +266,7 @@ public class HealthVaultServices {
 	
 			return Response.status(200).entity("success").build();
 		}catch(Exception e){
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error while saving the personal history to Health Vault").build();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error while saving the personal history to Health Vault" + e.getMessage()).build();
 		}
 
 	}	
@@ -276,7 +278,7 @@ public class HealthVaultServices {
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getRecord(DataBean dataBean) {		
- 
+		System.out.println("In load from health vault service");
 		String authToken = "";
 		try {
 			authToken = URLDecoder.decode(dataBean.getAuthToken(), "UTF-8");
@@ -297,7 +299,7 @@ public class HealthVaultServices {
 			System.out.println(person);
 			return Response.status(200).entity(person).header("Access-Control-Allow-Origin", "*").header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS").header("Access-Control-Allow-Headers", "Content-Type, Content-Range, Content-Disposition, Content-Description").build();
 		}catch(Exception e){
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error while retrieving the personal history from Health Vault").build();
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Error while retrieving the personal history from Health Vault" + e.getMessage()).build();
 		}
 
 	}	
